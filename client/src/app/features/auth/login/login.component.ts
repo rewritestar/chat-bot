@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,9 +14,15 @@ export class Login {
     password: new FormControl(''),
   });
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private http: HttpClient,
+  ) {}
 
   onSubmit() {
+    this.http.get('http://localhost:4200/api/test').subscribe((res) => {
+      console.log(res);
+    });
     this.form.getRawValue();
   }
 
