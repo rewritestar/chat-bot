@@ -3,7 +3,7 @@
   (ngSubmit)="onSubmit()"
   class="min-w-96 h-full flex items-center justify-center"
 >
-  <div class="w-96">
+  <div class="w-96 flex flex-col">
     <div class="w-full">
       <label for="email">이메일 </label>
       <input id="email" type="text" formControlName="email" />
@@ -13,5 +13,6 @@
       <input id="password" type="passwordpassword" formControlName="password" />
     </div>
     <input type="submit" value="제출" />
+    <a (click)="goToSignin()">회원이 아니신가요?</a>
   </div>
 </form>

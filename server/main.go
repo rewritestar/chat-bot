@@ -1,8 +1,8 @@
 package main
 
 import (
+	"chat-bot/src/auth"
 	"log"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,12 +12,13 @@ func main() {
   router := gin.Default()
 
   apiRouter := router.Group("/api")
-  apiRouter.GET("/test", func(c *gin.Context) {
-    // Return JSON response
-    c.JSON(http.StatusOK, gin.H{
-      "message": "pong",
-    })
-  })
+  // apiRouter.GET("/test", func(c *gin.Context) {
+  //   // Return JSON response
+  //   c.JSON(http.StatusOK, gin.H{
+  //     "message": "pong",
+  //   })
+  // })
+  auth.Main(apiRouter)
 
 
   if err := router.Run(); err != nil {
