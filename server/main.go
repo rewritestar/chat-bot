@@ -2,26 +2,20 @@ package main
 
 import (
 	"chat-bot/src/auth"
+	"chat-bot/src/init/database"
 	"log"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-  // Create a Gin router with default middleware (logger and recovery)
-  router := gin.Default()
+	database.NewMariaDB()
+	router := gin.Default()
 
-  apiRouter := router.Group("/api")
-  // apiRouter.GET("/test", func(c *gin.Context) {
-  //   // Return JSON response
-  //   c.JSON(http.StatusOK, gin.H{
-  //     "message": "pong",
-  //   })
-  // })
-  auth.Main(apiRouter)
+	apiRouter := router.Group("/api")
+	auth.Main(apiRouter)
 
-
-  if err := router.Run(); err != nil {
-    log.Fatalf("failed to run server: %v", err)
-  }
+	if err := router.Run(); err != nil {
+		log.Fatalf("failed to run server: %v", err)
+	}
 }
