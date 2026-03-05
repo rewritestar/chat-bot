@@ -3,40 +3,47 @@ package auth
 import (
 	"net/http"
 
-	"chat-bot/src/auth/message"
+	"chat-bot/src/auth/interactor"
+	"chat-bot/src/auth/repository"
+	"chat-bot/src/auth/service"
 	"chat-bot/src/init/database"
-	"chat-bot/src/model"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Main(r *gin.RouterGroup) {
-	db := database.GetMariaDB()
+	repo := repository.NewAuthRepository(database.GetMariaDB())
+	service := service.NewAuthService(repo)
 
-	r.POST("/signin", func(c *gin.Context) {
-		req := message.RequestSignin{}
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		worker := model.Worker{}
-		worker.Email = req.Email
-		worker.Password = req.Password
-
-		err := db.Create(&worker).
-			Error
+	r.POST("/signin", func(ctx *gin.Context) {
+		reqData, err := interactor.SigninController(ctx)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			interactor.ErrorPresenter(ctx, http.StatusBadRequest, err)
 			return
 		}
 
-		res := message.ResponseSignin{
-			WorkerID: worker.ID,
-			Email:    worker.Email,
+		worker, err := service.Signin(*reqData)
+		if err != nil {
+			interactor.ErrorPresenter(ctx, http.StatusInternalServerError, err)
+			return
 		}
 
-		// Return JSON response
-		c.JSON(http.StatusOK, res)
+		interactor.SigninPresenter(ctx, worker)
+	})
+
+	r.POST("/login", func(ctx *gin.Context) {
+		reqData, err := interactor.LoginController(ctx)
+		if err != nil {
+			interactor.ErrorPresenter(ctx, http.StatusBadRequest, err)
+			return
+		}
+
+		worker, err := service.Login(*reqData)
+		if err != nil {
+			interactor.ErrorPresenter(ctx, http.StatusInternalServerError, err)
+			return
+		}
+
+		interactor.LoginPresenter(ctx, worker)
 	})
 }

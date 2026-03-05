@@ -20,10 +20,18 @@ export class Login {
   ) {}
 
   onSubmit() {
-    this.http.get('http://localhost:4200/api/test').subscribe((res) => {
+    if (this.form.invalid) {
+      console.log(this.form.errors);
+      return;
+    }
+
+    const req = {
+      email: this.form.value.email?.trim(),
+      password: this.form.value.password?.trim(),
+    };
+    this.http.post('http://localhost:4200/api/login', req).subscribe((res) => {
       console.log(res);
     });
-    this.form.getRawValue();
   }
 
   goToSignin() {
