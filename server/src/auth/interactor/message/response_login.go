@@ -1,14 +1,17 @@
 package message
 
-import "chat-bot/src/auth/domain"
+import (
+	"time"
+
+	"chat-bot/src/auth/domain"
+)
 
 type ResponseLogin struct {
-	WorkerID uint   `json:"workerId"`
-	Email    string `json:"email"`
-	Token    string // 구현 필요
+	Token string    `json:"token"`
+	Exp   time.Time `json:"exp"`
 }
 
-func (r *ResponseLogin) Build(worker domain.Worker) {
-	r.WorkerID = worker.ID
-	r.Email = worker.Email
+func (r *ResponseLogin) Build(token *domain.Token) {
+	r.Token = token.Token
+	r.Exp = token.Exp
 }

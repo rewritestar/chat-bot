@@ -26,7 +26,7 @@ func (s *authService) Signin(reqData domain.Worker) (*domain.Worker, error) {
 	return s.repo.SaveWorker(reqData)
 }
 
-func (s *authService) Login(reqData domain.Worker) (*domain.Worker, error) {
+func (s *authService) Login(reqData domain.Worker) (*domain.Token, error) {
 	found, err := s.repo.FindWorkerByEmail(reqData.Email)
 	if err != nil {
 		return nil, err
@@ -34,6 +34,10 @@ func (s *authService) Login(reqData domain.Worker) (*domain.Worker, error) {
 	if err := bcrypt.CompareHashAndPassword([]byte(found.Password), []byte(reqData.Password)); err != nil {
 		return nil, err
 	}
-	// 토큰 발생 필요
-	return found, nil
+
+	token, err := found.GenerateToken()
+	if err != nil {
+		return nil, err
+	}
+	return token, nil
 }

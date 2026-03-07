@@ -1,7 +1,7 @@
-import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthApiService } from '../services/auth-api.service';
 
 @Component({
   selector: 'login',
@@ -10,13 +10,13 @@ import { Router } from '@angular/router';
 })
 export class Login {
   form = new FormGroup({
-    email: new FormControl(''),
-    password: new FormControl(''),
+    email: new FormControl('', [Validators.required]),
+    password: new FormControl('', [Validators.required]),
   });
 
   constructor(
     private router: Router,
-    private http: HttpClient,
+    private authApi: AuthApiService,
   ) {}
 
   onSubmit() {
@@ -29,9 +29,19 @@ export class Login {
       email: this.form.value.email?.trim(),
       password: this.form.value.password?.trim(),
     };
-    this.http.post('http://localhost:4200/api/login', req).subscribe((res) => {
-      console.log(res);
+
+    this.authApi.login(req).subscribe((res) => {
+      this.setToken(res);
+      this.router.navigate(['']);
     });
+  }
+
+  setToken(token: any) {
+    const authSession = {
+      token: token.token,
+      exp: token.exp,
+    };
+    localStorage.setItem('authSession', JSON.stringify(authSession));
   }
 
   goToSignin() {

@@ -38,12 +38,12 @@ func Main(r *gin.RouterGroup) {
 			return
 		}
 
-		worker, err := service.Login(*reqData)
+		token, err := service.Login(*reqData)
 		if err != nil {
 			interactor.ErrorPresenter(ctx, http.StatusInternalServerError, err)
 			return
 		}
 
-		interactor.LoginPresenter(ctx, worker)
+		interactor.LoginPresenter(ctx, token)
 	})
 }

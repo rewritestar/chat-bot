@@ -3,6 +3,8 @@ package main
 import (
 	"chat-bot/src/auth"
 	"chat-bot/src/init/database"
+	"chat-bot/src/init/database/middleware"
+	"fmt"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -10,12 +12,17 @@ import (
 
 func main() {
 	database.NewMariaDB()
-	router := gin.Default()
+	r := gin.Default()
 
-	apiRouter := router.Group("/api")
-	auth.Main(apiRouter)
+	router := r.Group("/api")
+	auth.Main(router)
 
-	if err := router.Run(); err != nil {
+	router.Use(middleware.JwtMiddleware())
+	router.GET("test", func(c *gin.Context) {
+		fmt.Println("excuted.")
+	})
+
+	if err := r.Run(); err != nil {
 		log.Fatalf("failed to run server: %v", err)
 	}
 }

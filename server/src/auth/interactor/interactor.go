@@ -30,9 +30,9 @@ func LoginController(ctx *gin.Context) (*domain.Worker, error) {
 	return reqData.ToWorker(), nil
 }
 
-func LoginPresenter(ctx *gin.Context, worker *domain.Worker) {
+func LoginPresenter(ctx *gin.Context, token *domain.Token) {
 	response := message.ResponseLogin{}
-	response.Build(*worker)
+	response.Build(token)
 	ctx.JSON(http.StatusOK, response)
 }
 

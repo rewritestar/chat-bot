@@ -1,21 +1,19 @@
-import { Component } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Component, inject } from '@angular/core';
 import { AuthService } from '../../core/services/auth.service';
-import { Router } from '@angular/router';
+import { environment } from '../../environments/environments';
 
 @Component({
   selector: 'dashboard',
   templateUrl: 'dashboard.html',
 })
 export class Dashboard {
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-  ) {
-    console.log('ex1');
-    if (!this.authService.isLogin()) {
-      console.log('ex2');
+  http = inject(HttpClient);
+  constructor() {
+    this.onClick();
+  }
 
-      this.router.navigate(['login']);
-    }
+  onClick() {
+    this.http.get(`${environment.apiUrl}/test`).subscribe();
   }
 }

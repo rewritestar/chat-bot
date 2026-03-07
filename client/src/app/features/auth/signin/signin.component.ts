@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { AuthApiService } from '../services/auth-api.service';
 
 @Component({
   selector: 'signin',
@@ -13,7 +13,7 @@ export class Signin {
     password: new FormControl(''),
   });
 
-  constructor(private http: HttpClient) {}
+  constructor(private authApi: AuthApiService) {}
 
   onSubmit() {
     if (this.form.invalid) {
@@ -26,8 +26,6 @@ export class Signin {
       password: this.form.value.password?.trim(),
     };
 
-    this.http.post('http://localhost:4200/api/signin', req).subscribe((res) => {
-      console.log(res);
-    });
+    this.authApi.signin(req).subscribe();
   }
 }
