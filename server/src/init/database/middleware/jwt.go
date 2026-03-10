@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	core_values "chat-bot/src/core"
 	"os"
 	"strings"
 
@@ -25,6 +26,13 @@ func JwtMiddleware() gin.HandlerFunc {
 		if err != nil || !token.Valid {
 			c.AbortWithStatusJSON(401, gin.H{"error": err.Error()})
 			return
+		}
+
+		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+			workerID, ok := claims[core_values.WorkerIDKey].(float64)
+			if ok {
+				c.Set(core_values.WorkerIDKey, uint(workerID))
+			}
 		}
 		c.Next()
 	}
