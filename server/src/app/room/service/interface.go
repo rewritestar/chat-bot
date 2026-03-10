@@ -6,4 +6,5 @@ type RoomService interface {
 	SaveRoom(domain.Room) (*domain.Room, error)
 	ShowRoom() (*domain.Room, error)
 	SingleRoom(domain.Room) (*domain.Room, error)
+	SaveChat(domain.Chat) (*domain.Chat, error)
 }

@@ -38,4 +38,13 @@ export class AuthService {
     const exp = authSession.exp;
     return moment(exp);
   }
+
+  getId() {
+    const authSession = this.getAuthSession();
+    if (!authSession) {
+      return null;
+    }
+    const id = authSession.workerId;
+    return id;
+  }
 }

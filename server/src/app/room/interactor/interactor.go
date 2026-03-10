@@ -27,6 +27,23 @@ func RoomPresenter(ctx *gin.Context, room *domain.Room) {
 	ctx.JSON(http.StatusOK, response)
 }
 
+func ChatController(ctx *gin.Context) (*domain.Chat, error) {
+	reqData := message.RequestChat{}
+	if err := ctx.ShouldBindJSON(&reqData); err != nil {
+		return nil, err
+	}
+	workerID, ok := ctx.Get(core_values.WorkerIDKey)
+	if !ok {
+		err := errors.New("worker id does not exist.")
+		return nil, err
+	}
+	return reqData.ToChat(workerID.(uint)), nil
+}
+
+func CreatedPresenter(ctx *gin.Context) {
+	ctx.JSON(http.StatusCreated, nil)
+}
+
 func ErrorPresenter(ctx *gin.Context, statusCode int, err error) {
 	ctx.JSON(statusCode, gin.H{"error": err.Error()})
 }

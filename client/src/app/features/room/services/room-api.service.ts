@@ -16,6 +16,6 @@ export class RoomApiService {
   }
 
   saveChat(reqData: any) {
-    return this.http.post(`${this.apiUrl}/chat`, reqData);
+    return this.http.post(`${this.apiUrl}/chats`, reqData);
   }
 }
