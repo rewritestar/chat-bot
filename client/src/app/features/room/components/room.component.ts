@@ -2,8 +2,9 @@ import { Component } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RoomApiService } from '../services/room-api.service';
 import { AsyncPipe } from '@angular/common';
-import { Observable, startWith, Subject, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, Observable, startWith, Subject, switchMap, tap } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
+import { ChatService } from '../../../core/services/chat.service';
 
 @Component({
   selector: 'room',
@@ -15,6 +16,7 @@ export class Room {
   room$: Observable<any>;
   roomId: number = 0;
   workerId: number;
+  chatList$ = new BehaviorSubject<any[]>([]);
 
   form = new FormGroup({
     content: new FormControl(''),
@@ -27,13 +29,23 @@ export class Room {
   constructor(
     private roomApi: RoomApiService,
     private authService: AuthService,
+    private chatService: ChatService,
   ) {
     this.room$ = this.reload$.pipe(
       startWith(void 0),
       switchMap(() => this.roomApi.getRoom()),
-      tap((room: any) => (this.roomId = room.id)),
+      tap((room: any) => {
+        this.roomId = room.id;
+        this.chatList$.next(room?.chatList);
+      }),
     );
     this.workerId = this.authService.getId();
+
+    this.chatService.connect();
+    this.chatService.getMessage().subscribe((data) => {
+      const current = this.chatList$.value || [];
+      this.chatList$.next([...current, data]);
+    });
   }
 
   roadData() {
@@ -51,10 +63,8 @@ export class Room {
       content: this.form.value.content?.trim(),
     };
 
-    this.roomApi.saveChat(req).subscribe(() => {
-      this.roadData();
-      this.resetForm();
-    });
+    this.chatService.sendMessage(req);
+    this.resetForm();
   }
 
   resetForm() {

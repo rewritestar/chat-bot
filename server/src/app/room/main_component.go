@@ -6,7 +6,7 @@ import (
 	"chat-bot/src/app/room/interactor"
 	"chat-bot/src/app/room/repository"
 	"chat-bot/src/app/room/service"
-	"chat-bot/src/init/database"
+	"chat-bot/src/initial/database"
 
 	"github.com/gin-gonic/gin"
 )

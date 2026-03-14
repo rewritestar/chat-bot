@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	core_values "chat-bot/src/core"
+	core_values "chat-bot/src/core/values"
 	"os"
 	"strings"
 

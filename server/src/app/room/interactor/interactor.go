@@ -6,7 +6,7 @@ import (
 
 	"chat-bot/src/app/room/domain"
 	"chat-bot/src/app/room/interactor/message"
-	core_values "chat-bot/src/core"
+	core_values "chat-bot/src/core/values"
 
 	"github.com/gin-gonic/gin"
 )

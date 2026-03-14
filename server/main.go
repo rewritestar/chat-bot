@@ -5,14 +5,15 @@ import (
 
 	"chat-bot/src/app/auth"
 	"chat-bot/src/app/room"
-	"chat-bot/src/init/database"
-	"chat-bot/src/init/database/middleware"
+	"chat-bot/src/app/ws"
+	"chat-bot/src/initial"
+	"chat-bot/src/initial/database/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	database.NewMariaDB()
+	initial.Main()
 	r := gin.Default()
 
 	router := r.Group("/api")
@@ -23,6 +24,11 @@ func main() {
 	router.Use(middleware.JwtMiddleware())
 	{
 		room.Main(router)
+	}
+
+	wsRouter := r.Group("/ws")
+	{
+		ws.Main(wsRouter)
 	}
 
 	if err := r.Run(); err != nil {

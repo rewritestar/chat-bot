@@ -7,10 +7,10 @@ type ResponseRoom struct {
 	Name      string `json:"name"`
 	CreatorID uint   `json:"creatorId"`
 
-	ChatList []responseChat `json:"chatList"`
+	ChatList []ResponseChat `json:"chatList"`
 }
 
-type responseChat struct {
+type ResponseChat struct {
 	ID        uint   `json:"id"`
 	Content   string `json:"content"`
 	CreatorID uint   `json:"creatorId"`
@@ -22,11 +22,15 @@ func (r *ResponseRoom) Build(room domain.Room) {
 	r.CreatorID = room.CreatorID
 
 	for _, chat := range room.ChatList {
-		responseChat := responseChat{}
-		responseChat.ID = chat.ID
-		responseChat.Content = chat.Content
-		responseChat.CreatorID = chat.CreatorID
+		responseChat := ResponseChat{}
+		responseChat.Build(chat)
 
 		r.ChatList = append(r.ChatList, responseChat)
 	}
+}
+
+func (r *ResponseChat) Build(chat *domain.Chat) {
+	r.ID = chat.ID
+	r.Content = chat.Content
+	r.CreatorID = chat.CreatorID
 }
