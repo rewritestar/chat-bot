@@ -41,7 +41,3 @@ func (s *roomService) SingleRoom(reqData domain.Room) (*domain.Room, error) {
 	}
 	return room, nil
 }
-
-func (s *roomService) SaveChat(reqData domain.Chat) (*domain.Chat, error) {
-	return s.repo.SaveChat(reqData)
-}

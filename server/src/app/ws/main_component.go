@@ -1,11 +1,10 @@
 package ws
 
 import (
-	"chat-bot/src/app/room/repository"
-	"chat-bot/src/app/room/service"
 	"chat-bot/src/app/ws/interactor"
-	"chat-bot/src/app/ws/values"
-	"chat-bot/src/core/ws"
+	"chat-bot/src/app/ws/service"
+	"chat-bot/src/common-service/chat"
+	chatRepository "chat-bot/src/common-service/chat/repository"
 	"chat-bot/src/initial/database"
 	"net/http"
 
@@ -13,22 +12,14 @@ import (
 )
 
 func Main(r *gin.RouterGroup) {
-	repo := repository.NewRoomRepository(database.GetMariaDB())
-	service := service.NewRoomService(repo)
-	hub := ws.GetHub()
+	chatRepo := chatRepository.NewChatRepository(database.GetMariaDB())
+	chatService := chat.NewChatService(chatRepo)
+	service := service.NewWsService(chatService)
 
 	r.GET("", func(ctx *gin.Context) {
-		conn, err := values.Upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
-		if err != nil {
+		if err := service.AddClient(ctx); err != nil {
 			interactor.ErrorPresenter(ctx, http.StatusInternalServerError, err)
 			return
 		}
-		client := ws.NewClient(hub, conn, make(chan []byte, 256), ctx, service)
-		client.Hub.Register <- client
-
-		// Allow collection of memory referenced by the caller by doing all work in
-		// new goroutines.
-		go client.WritePump()
-		go client.ReadPump()
 	})
 }

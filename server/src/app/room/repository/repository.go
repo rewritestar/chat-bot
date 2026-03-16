@@ -43,11 +43,3 @@ func (r *roomRepository) FindRoom() (*domain.Room, error) {
 	}
 	return &result, nil
 }
-
-func (r *roomRepository) SaveChat(chat domain.Chat) (*domain.Chat, error) {
-	if err := r.db.Create(&chat).Error; err != nil {
-		log.Println(err.Error())
-		return nil, err
-	}
-	return &chat, nil
-}

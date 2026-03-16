@@ -1,6 +1,6 @@
-package service
+package chat
 
-import "chat-bot/src/core/ws/internal/domain"
+import "chat-bot/src/common-service/chat/domain"
 
 type ChatService interface {
 	SaveChat(domain.Chat) (*domain.Chat, error)

@@ -1,12 +1,15 @@
 package repository
 
 import (
+	"chat-bot/src/common-service/chat/domain"
 	"log"
-
-	"chat-bot/src/core/ws/internal/domain"
 
 	"gorm.io/gorm"
 )
+
+type ChatRepository interface {
+	SaveChat(domain.Chat) (*domain.Chat, error)
+}
 
 type chatRepository struct {
 	db *gorm.DB

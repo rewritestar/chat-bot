@@ -48,22 +48,4 @@ func Main(r *gin.RouterGroup) {
 
 		interactor.RoomPresenter(ctx, room)
 	})
-
-	chatRouter := r.Group("chats")
-
-	chatRouter.POST("", func(ctx *gin.Context) {
-		reqData, err := interactor.ChatController(ctx)
-		if err != nil {
-			interactor.ErrorPresenter(ctx, http.StatusBadRequest, err)
-			return
-		}
-
-		_, err = service.SaveChat(*reqData)
-		if err != nil {
-			interactor.ErrorPresenter(ctx, http.StatusInternalServerError, err)
-			return
-		}
-
-		interactor.CreatedPresenter(ctx)
-	})
 }

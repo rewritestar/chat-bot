@@ -5,18 +5,12 @@
 package ws
 
 import (
-	roomMessage "chat-bot/src/app/room/interactor/message"
-
-	roomDomain "chat-bot/src/app/room/domain"
-	"chat-bot/src/app/room/service"
-	core_values "chat-bot/src/core/values"
-	"chat-bot/src/core/ws/domain"
-	"errors"
-
-	"chat-bot/src/core/ws/values"
-	"encoding/json"
-	"log"
+	"chat-bot/src/common-service/chat"
 	"os"
+
+	core_values "chat-bot/src/core/values"
+
+	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -55,10 +49,10 @@ type Client struct {
 
 	ctx *gin.Context
 
-	svc service.RoomService
+	svc chat.ChatService
 }
 
-func NewClient(hub *Hub, conn *websocket.Conn, send chan []byte, ctx *gin.Context, svc service.RoomService) *Client {
+func NewClient(hub *Hub, conn *websocket.Conn, send chan []byte, ctx *gin.Context, svc chat.ChatService) *Client {
 	return &Client{
 		hub,
 		conn,
@@ -68,11 +62,6 @@ func NewClient(hub *Hub, conn *websocket.Conn, send chan []byte, ctx *gin.Contex
 	}
 }
 
-// readPump pumps messages from the websocket connection to the hub.
-//
-// The application runs readPump in a per-connection goroutine. The application
-// ensures that there is at most one reader on a connection by executing all
-// reads from this goroutine.
 func (c *Client) ReadPump() {
 	defer func() {
 		c.Hub.unregister <- c
@@ -82,7 +71,6 @@ func (c *Client) ReadPump() {
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 
-mainRoop:
 	for {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
@@ -91,60 +79,7 @@ mainRoop:
 			}
 			break
 		}
-		reqMsg := domain.Message{}
-		if err := json.Unmarshal(message, &reqMsg); err != nil {
-			log.Printf("error: %v", err)
-			break
-		}
-
-		dataBytes, err := json.Marshal(reqMsg.Data)
-		if err != nil {
-			log.Printf("error: %v", err)
-			break
-		}
-		switch reqMsg.Type {
-		case values.MessageTypeAuth:
-			reqAuth := domain.AuthMessage{}
-			json.Unmarshal(dataBytes, &reqAuth)
-
-			if err := c.authorizeWsJwt(reqAuth.Token); err != nil {
-				log.Printf("error: %v", err)
-				break mainRoop
-			}
-		case values.MessageTypeChat:
-			reqChat := domain.ChatMessage{}
-			json.Unmarshal(dataBytes, &reqChat)
-
-			domainChat := roomDomain.Chat{}
-			domainChat.Content = reqChat.Content
-			domainChat.RoomID = reqChat.RoomID
-			workerID, ok := c.ctx.Get(core_values.WorkerIDKey)
-			if !ok {
-				err := errors.New("worker id does not exist.")
-				log.Printf("error: %v", err)
-				break mainRoop
-			}
-			domainChat.CreatorID = workerID.(uint)
-
-			if _, err := c.svc.SaveChat(domainChat); err != nil {
-				log.Printf("error: %v", err)
-				break mainRoop
-			}
-
-			responseChat := roomMessage.ResponseChat{}
-			responseChat.Build(&domainChat)
-
-			chatBytes, err := json.Marshal(responseChat)
-			if err != nil {
-				log.Printf("error: %v", err)
-				break mainRoop
-			}
-
-			c.Hub.broadcast <- chatBytes
-		default:
-			break mainRoop
-		}
-
+		c.readHandler(message)
 	}
 }
 

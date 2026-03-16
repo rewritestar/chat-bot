@@ -1,6 +1,6 @@
 package message
 
-import "chat-bot/src/app/room/domain"
+import "chat-bot/src/common-service/chat/domain"
 
 type RequestChat struct {
 	RoomID  uint   `json:"roomId"`
