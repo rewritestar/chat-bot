@@ -30,3 +30,6 @@ CREATE TABLE chat (
     FOREIGN KEY (room_id) REFERENCES room(id),
     FOREIGN KEY (creator_id) REFERENCES worker(id)
 );
+
+-- 디폴트 값
+INSERT INTO worker VALUES(1, "ai@admin.net", "$2a$10$KFvdVE9pibU.K6efgccCHuVOrvGTIzoD9Uxt5tzR/zRxjIIr6s3cy", "2026-03-19","2026-03-19")

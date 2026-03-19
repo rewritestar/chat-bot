@@ -1,8 +1,6 @@
 package message
 
-import (
-	"chat-bot/src/app/room/domain"
-)
+import "chat-bot/src/app/room/domain"
 
 type ResponseRoom struct {
 	ID        uint   `json:"id"`

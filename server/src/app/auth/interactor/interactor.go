@@ -1,9 +1,10 @@
 package interactor
 
 import (
+	"net/http"
+
 	"chat-bot/src/app/auth/domain"
 	"chat-bot/src/app/auth/interactor/message"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )

@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"chat-bot/src/common-service/chat/domain"
 	"log"
+
+	"chat-bot/src/common-service/chat/domain"
 
 	"gorm.io/gorm"
 )

@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	core_values "chat-bot/src/core/values"
 	"os"
 	"strings"
+
+	core_values "chat-bot/src/core/values"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"

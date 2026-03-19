@@ -4,10 +4,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
-
-	"chat-bot/src/app/auth/values"
+	core_values "chat-bot/src/core/values"
 	"chat-bot/src/model"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type Worker struct {
@@ -23,7 +23,7 @@ func (w *Worker) GenerateToken() (*Token, error) {
 			"exp":      exp,
 		},
 	)
-	token, err := t.SignedString([]byte(os.Getenv(values.EnvJwtSecret)))
+	token, err := t.SignedString([]byte(os.Getenv(core_values.EnvJwtSecret)))
 	if err != nil {
 		return nil, err
 	}

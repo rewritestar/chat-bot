@@ -1,14 +1,16 @@
 package ws
 
 import (
+	"encoding/json"
+	"errors"
+	"log"
+
 	chatDomain "chat-bot/src/common-service/chat/domain"
 	chatMessage "chat-bot/src/common-service/chat/message"
 	core_values "chat-bot/src/core/values"
 	"chat-bot/src/core/ws/domain"
 	"chat-bot/src/core/ws/values"
-	"encoding/json"
-	"errors"
-	"log"
+	"chat-bot/src/initial/default_data"
 )
 
 func (c *Client) readHandler(message []byte) {
@@ -30,7 +32,6 @@ func (c *Client) readHandler(message []byte) {
 		c.chatHandler(dataBytes)
 	default:
 	}
-	return
 }
 
 func (c *Client) authHandler(data []byte) {
@@ -72,5 +73,28 @@ func (c *Client) chatHandler(data []byte) {
 		return
 	}
 	c.Hub.broadcast <- chatBytes
+	c.ollamaHandler(reqChat)
+}
 
+func (c *Client) ollamaHandler(reqChat domain.ChatMessage) {
+	response := c.ollamaSvc.Chat(reqChat.Content)
+
+	domainChat := chatDomain.Chat{}
+	domainChat.Content = response.Message.Content
+	domainChat.RoomID = reqChat.RoomID
+	domainChat.CreatorID = default_data.GetAIWorker().ID
+	if _, err := c.svc.SaveChat(domainChat); err != nil {
+		log.Printf("error: %v", err)
+		return
+	}
+
+	responseChat := chatMessage.ResponseChat{}
+	responseChat.Build(&domainChat)
+
+	chatBytes, err := json.Marshal(responseChat)
+	if err != nil {
+		log.Printf("error: %v", err)
+		return
+	}
+	c.Hub.broadcast <- chatBytes
 }

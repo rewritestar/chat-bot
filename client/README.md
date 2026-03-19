@@ -6,19 +6,14 @@ $ npm run start
 
 ## Works to do
 
-- AI 연결
-- 에러처리
-- UI 개선
-- AI 기억력 개선
+- Angular 비동기 화면 갱신에 대한 이해
 
 ## Problem
 
-- AI 가 선톡을 할때, UI 를 어떻게 업데이트 시키는가? => http 통신은 요청-응답 구조임
-  => checkOrigin 강제 true 수정하기
-  => 웹소켓 코드 구조 개선하기
-  => 채팅창 마지막 채팅 스크롤 고정하기
-
-- Angular 비동기 화면 갱신에 대한 이해
+- 에러처리
+- UI 개선(마크다운 CHAT 개선, CHAT 크기 좁은 문제, CHAT 로딩 ui, 스크롤 하단 고정)
+- AI 기억력 개선
+- checkOrigin 강제 true 수정하기
 
 ## 웹소켓 JWT 검증
 
@@ -31,3 +26,4 @@ $ npm run start
 - 채팅방 구현
 - HTTP JWT 검증
 - 웹소켓 JWT 검증
+- AI 연결

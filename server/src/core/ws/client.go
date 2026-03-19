@@ -8,6 +8,7 @@ import (
 	"chat-bot/src/common-service/chat"
 	"os"
 
+	"chat-bot/src/core/ollama"
 	core_values "chat-bot/src/core/values"
 
 	"log"
@@ -50,15 +51,18 @@ type Client struct {
 	ctx *gin.Context
 
 	svc chat.ChatService
+
+	ollamaSvc ollama.OllamaService
 }
 
-func NewClient(hub *Hub, conn *websocket.Conn, send chan []byte, ctx *gin.Context, svc chat.ChatService) *Client {
+func NewClient(hub *Hub, conn *websocket.Conn, send chan []byte, ctx *gin.Context, svc chat.ChatService, ollamaSvc ollama.OllamaService) *Client {
 	return &Client{
 		hub,
 		conn,
 		send,
 		ctx,
 		svc,
+		ollamaSvc,
 	}
 }
 
@@ -72,7 +76,7 @@ func (c *Client) ReadPump() {
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 
 	for {
-		_, message, err := c.conn.ReadMessage()
+		_, message, err := c.conn.ReadMessage() //프론트에서만 trigger 된다.
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
@@ -96,7 +100,7 @@ func (c *Client) WritePump() {
 	}()
 	for {
 		select {
-		case message, ok := <-c.send:
+		case message, ok := <-c.send: // chatHandler 를 거치고 프론트로 보낸다.
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.

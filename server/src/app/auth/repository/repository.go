@@ -1,10 +1,11 @@
 package repository
 
 import (
-	"chat-bot/src/app/auth/domain"
 	"log"
 
 	"gorm.io/gorm"
+
+	"chat-bot/src/app/auth/domain"
 )
 
 type authRepository struct {
