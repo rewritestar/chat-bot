@@ -19,6 +19,10 @@ func (s *roomService) SaveRoom(reqData domain.Room) (*domain.Room, error) {
 	return s.repo.SaveRoom(reqData)
 }
 
+func (s *roomService) UpdateRoom(reqData domain.Room) (*domain.Room, error) {
+	return s.repo.UpdateRoom(reqData)
+}
+
 func (s *roomService) ShowRoom() (*domain.Room, error) {
 	return s.repo.FindRoom()
 }

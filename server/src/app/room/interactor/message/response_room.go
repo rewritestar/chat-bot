@@ -5,6 +5,7 @@ import "chat-bot/src/app/room/domain"
 type ResponseRoom struct {
 	ID        uint   `json:"id"`
 	Name      string `json:"name"`
+	AiSystem  string `json:"aiSystem"`
 	CreatorID uint   `json:"creatorId"`
 
 	ChatList []responseChat `json:"chatList"`
@@ -19,6 +20,7 @@ type responseChat struct {
 func (r *ResponseRoom) Build(room domain.Room) {
 	r.ID = room.ID
 	r.Name = room.Name
+	r.AiSystem = room.AiSystem
 	r.CreatorID = room.CreatorID
 
 	for _, chat := range room.ChatList {

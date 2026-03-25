@@ -18,3 +18,7 @@ func NewChatService(repo repository.ChatRepository) ChatService {
 func (s *chatService) SaveChat(chat domain.Chat) (*domain.Chat, error) {
 	return s.repo.SaveChat(chat)
 }
+
+func (s *chatService) FindHistoryByRoomID(roomID uint) (*domain.Room, error) {
+	return s.repo.FindHistoryByRoomID(roomID)
+}

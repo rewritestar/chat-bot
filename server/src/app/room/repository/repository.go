@@ -26,6 +26,14 @@ func (r *roomRepository) SaveRoom(room domain.Room) (*domain.Room, error) {
 	return &room, nil
 }
 
+func (r *roomRepository) UpdateRoom(room domain.Room) (*domain.Room, error) {
+	if err := r.db.Updates(&room).Error; err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+	return &room, nil
+}
+
 func (r *roomRepository) FindRoom() (*domain.Room, error) {
 	result := domain.Room{}
 

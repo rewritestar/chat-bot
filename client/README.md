@@ -10,10 +10,15 @@ $ npm run start
 
 ## Problem
 
+- AI 선톡 기능(랜덤으로 AI에게 요청보내고 답변만 사용자에게 송출)
 - 에러처리
+- 웹소켓 close 되면 새로고침 해야하는 문제
 - UI 개선(마크다운 CHAT 개선, CHAT 크기 좁은 문제, CHAT 로딩 ui, 스크롤 하단 고정)
-- AI 기억력 개선
 - checkOrigin 강제 true 수정하기
+
+## AI 채팅 기억력
+
+- 장기 기억 메모리 요약본 DB 저장하여 동봉해서 API 발송
 
 ## 웹소켓 JWT 검증
 
@@ -27,3 +32,9 @@ $ npm run start
 - HTTP JWT 검증
 - 웹소켓 JWT 검증
 - AI 연결
+
+  ### AI 채팅 기억력
+  - ROOM 에 저장된 AI system 동봉해서 api 발송
+  - 최근 대화 10개 동봉해서 API 발송
+  - 시스템(고정 명령어)를 사용자가 편집할 수 있도록 함.
+  - AI 채팅 기억력(장기기억 요약본 생성기능 보류)

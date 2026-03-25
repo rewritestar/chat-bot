@@ -17,12 +17,18 @@ export class Room {
   roomId: number = 0;
   workerId: number;
   chatList$ = new BehaviorSubject<any[]>([]);
+  isOpenConfig: boolean = false;
 
-  form = new FormGroup({
+  chatForm = new FormGroup({
     content: new FormControl(''),
   });
 
-  defaultForm = {
+  roomForm = new FormGroup({
+    name: new FormControl(''),
+    aiSystem: new FormControl(''),
+  });
+
+  defaultChatForm = {
     content: '',
   };
 
@@ -37,6 +43,7 @@ export class Room {
       tap((room: any) => {
         this.roomId = room.id;
         this.chatList$.next(room?.chatList);
+        this.roomForm.patchValue(room);
       }),
     );
     this.workerId = this.authService.getId();
@@ -52,23 +59,48 @@ export class Room {
     this.reload$.next();
   }
 
-  onSubmit() {
-    if (this.form.invalid) {
-      console.log(this.form.errors);
+  onChatSubmit() {
+    if (this.chatForm.invalid) {
+      console.log(this.chatForm.errors);
       return;
     }
 
     const req = {
       roomId: this.roomId,
-      content: this.form.value.content?.trim(),
+      content: this.chatForm.value.content?.trim(),
     };
 
     this.chatService.sendMessage(req);
-    this.resetForm();
+    this.resetChatForm();
   }
 
-  resetForm() {
-    this.form.reset(this.defaultForm);
+  onRoomSubmit() {
+    if (this.roomForm.invalid) {
+      console.log(this.roomForm.errors);
+      return;
+    }
+
+    const req = {
+      name: this.roomForm.value.name?.trim(),
+      aiSystem: this.roomForm.value.aiSystem?.trim(),
+    };
+
+    this.roomApi.updateRoom(this.roomId, req).subscribe(() => {
+      this.closeConfig();
+      this.roadData();
+    });
+  }
+
+  openConfig() {
+    this.isOpenConfig = true;
+  }
+
+  closeConfig() {
+    this.isOpenConfig = false;
+  }
+
+  resetChatForm() {
+    this.chatForm.reset(this.defaultChatForm);
   }
 
   isMyChat(chat: any): boolean {

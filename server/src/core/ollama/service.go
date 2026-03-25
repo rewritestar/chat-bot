@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	chatDomain "chat-bot/src/common-service/chat/domain"
 	"chat-bot/src/core/ollama/domain"
 	core_values "chat-bot/src/core/values"
 )
@@ -20,19 +21,11 @@ func NewOllamaService() OllamaService {
 	return &ollamaService{}
 }
 
-func (s *ollamaService) Chat(input string) *domain.ResponseBody {
+func (s *ollamaService) Chat(input string, roomHistory chatDomain.Room) *domain.ResponseBody {
 	chatUrl := fmt.Sprintf("%s/chat", core_values.OllamaApiURL)
 
-	reqBody := domain.RequestBody{
-		Model: core_values.OllamaModel,
-		Messages: []domain.RequestMessage{
-			{
-				Role:    "user",
-				Content: input,
-			},
-		},
-		Stream: false,
-	}
+	reqBody := domain.RequestBody{}
+	reqBody.SetBody(roomHistory, input)
 
 	var body bytes.Buffer
 	if err := json.NewEncoder(&body).Encode(reqBody); err != nil {

@@ -48,24 +48,31 @@ func (c *Client) chatHandler(data []byte) {
 	reqChat := domain.ChatMessage{}
 	json.Unmarshal(data, &reqChat)
 
-	domainChat := chatDomain.Chat{}
-	domainChat.Content = reqChat.Content
-	domainChat.RoomID = reqChat.RoomID
-	workerID, ok := c.ctx.Get(core_values.WorkerIDKey)
+	userID, ok := c.ctx.Get(core_values.WorkerIDKey)
 	if !ok {
 		err := errors.New("worker id does not exist.")
 		log.Printf("error: %v", err)
 		return
 	}
-	domainChat.CreatorID = workerID.(uint)
+	roomHistory, err := c.svc.FindHistoryByRoomID(reqChat.RoomID)
+	if err != nil {
+		log.Printf("error: %v", err)
+		return
+	}
 
-	if _, err := c.svc.SaveChat(domainChat); err != nil {
+	domainChat := chatDomain.Chat{}
+	domainChat.Content = reqChat.Content
+	domainChat.RoomID = reqChat.RoomID
+	domainChat.CreatorID = userID.(uint)
+
+	savedChat, err := c.svc.SaveChat(domainChat)
+	if err != nil {
 		log.Printf("error: %v", err)
 		return
 	}
 
 	responseChat := chatMessage.ResponseChat{}
-	responseChat.Build(&domainChat)
+	responseChat.Build(savedChat)
 
 	chatBytes, err := json.Marshal(responseChat)
 	if err != nil {
@@ -73,23 +80,25 @@ func (c *Client) chatHandler(data []byte) {
 		return
 	}
 	c.Hub.broadcast <- chatBytes
-	c.ollamaHandler(reqChat)
+	c.ollamaHandler(reqChat, *roomHistory)
 }
 
-func (c *Client) ollamaHandler(reqChat domain.ChatMessage) {
-	response := c.ollamaSvc.Chat(reqChat.Content)
+func (c *Client) ollamaHandler(reqChat domain.ChatMessage, roomHistory chatDomain.Room) {
+	response := c.ollamaSvc.Chat(reqChat.Content, roomHistory)
 
 	domainChat := chatDomain.Chat{}
 	domainChat.Content = response.Message.Content
 	domainChat.RoomID = reqChat.RoomID
 	domainChat.CreatorID = default_data.GetAIWorker().ID
-	if _, err := c.svc.SaveChat(domainChat); err != nil {
+
+	savedChat, err := c.svc.SaveChat(domainChat)
+	if err != nil {
 		log.Printf("error: %v", err)
 		return
 	}
 
 	responseChat := chatMessage.ResponseChat{}
-	responseChat.Build(&domainChat)
+	responseChat.Build(savedChat)
 
 	chatBytes, err := json.Marshal(responseChat)
 	if err != nil {

@@ -3,6 +3,7 @@ package interactor
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"chat-bot/src/app/room/domain"
 	"chat-bot/src/app/room/interactor/message"
@@ -21,6 +22,23 @@ func RoomController(ctx *gin.Context) (*domain.Room, error) {
 	return reqData.ToRoom(workerID.(uint)), nil
 }
 
+func RoomUpdateController(ctx *gin.Context) (*domain.Room, error) {
+	roomID, err := getID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	workerID, ok := ctx.Get(core_values.WorkerIDKey)
+	if !ok {
+		err := errors.New("worker id does not exist.")
+		return nil, err
+	}
+	reqData := message.UpdateRoom{}
+	if err := ctx.ShouldBindJSON(&reqData); err != nil {
+		return nil, err
+	}
+	return reqData.ToRoom(uint(roomID), workerID.(uint)), nil
+}
+
 func RoomPresenter(ctx *gin.Context, room *domain.Room) {
 	response := message.ResponseRoom{}
 	response.Build(*room)
@@ -33,4 +51,14 @@ func CreatedPresenter(ctx *gin.Context) {
 
 func ErrorPresenter(ctx *gin.Context, statusCode int, err error) {
 	ctx.JSON(statusCode, gin.H{"error": err.Error()})
+}
+
+func getID(ctx *gin.Context) (uint, error) {
+	idStr := ctx.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		err := errors.New("id parsing error.")
+		return 0, err
+	}
+	return uint(id), nil
 }

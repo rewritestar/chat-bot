@@ -33,6 +33,22 @@ func Main(r *gin.RouterGroup) {
 		interactor.RoomPresenter(ctx, room)
 	})
 
+	roomRouter.PUT("/:id", func(ctx *gin.Context) {
+		reqData, err := interactor.RoomUpdateController(ctx)
+		if err != nil {
+			interactor.ErrorPresenter(ctx, http.StatusBadRequest, err)
+			return
+		}
+
+		room, err := service.UpdateRoom(*reqData)
+		if err != nil {
+			interactor.ErrorPresenter(ctx, http.StatusInternalServerError, err)
+			return
+		}
+
+		interactor.RoomPresenter(ctx, room)
+	})
+
 	roomRouter.GET("", func(ctx *gin.Context) {
 		reqData, err := interactor.RoomController(ctx)
 		if err != nil {
