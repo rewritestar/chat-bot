@@ -9,4 +9,7 @@ import { RouterOutlet } from '@angular/router';
 })
 export class App {
   protected readonly title = signal('client');
+  constructor(private chatService: ChatService) {
+    this.chatService.connect();
+  }
 }

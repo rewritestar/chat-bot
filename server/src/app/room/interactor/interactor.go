@@ -12,13 +12,33 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RoomController(ctx *gin.Context) (*domain.Room, error) {
+func RoomIndexController(ctx *gin.Context) (uint, error) {
+	workerID, ok := ctx.Get(core_values.WorkerIDKey)
+	if !ok {
+		err := errors.New("worker id does not exist.")
+		return 0, err
+	}
+	return workerID.(uint), nil
+}
+
+func RoomShowController(ctx *gin.Context) (uint, error) {
+	roomID, err := getID(ctx)
+	if err != nil {
+		return 0, err
+	}
+	return roomID, nil
+}
+
+func RoomSaveController(ctx *gin.Context) (*domain.Room, error) {
 	workerID, ok := ctx.Get(core_values.WorkerIDKey)
 	if !ok {
 		err := errors.New("worker id does not exist.")
 		return nil, err
 	}
 	reqData := message.RequestRoom{}
+	if err := ctx.ShouldBindJSON(&reqData); err != nil {
+		return nil, err
+	}
 	return reqData.ToRoom(workerID.(uint)), nil
 }
 
@@ -37,6 +57,12 @@ func RoomUpdateController(ctx *gin.Context) (*domain.Room, error) {
 		return nil, err
 	}
 	return reqData.ToRoom(uint(roomID), workerID.(uint)), nil
+}
+
+func RoomIndexPresenter(ctx *gin.Context, roomList *domain.RoomList) {
+	response := message.ResponseRoomList{}
+	response.Build(*roomList)
+	ctx.JSON(http.StatusOK, response)
 }
 
 func RoomPresenter(ctx *gin.Context, room *domain.Room) {

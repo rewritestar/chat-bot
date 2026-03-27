@@ -42,6 +42,20 @@ func (c *Client) authHandler(data []byte) {
 		log.Printf("error: %v", err)
 		return
 	}
+
+	workerID, ok := c.ctx.Get(core_values.WorkerIDKey)
+	if !ok {
+		err := errors.New("worker id does not exist.")
+		log.Printf("error: %v", err)
+		return
+	}
+	roomList, err := c.svc.FindRoomByCreatorID(workerID.(uint))
+	if err != nil {
+		log.Printf("error: %v", err)
+		return
+	}
+	c.roomIDs = roomList.GetIDs()
+	c.Hub.Register <- c
 }
 
 func (c *Client) chatHandler(data []byte) {
@@ -79,7 +93,12 @@ func (c *Client) chatHandler(data []byte) {
 		log.Printf("error: %v", err)
 		return
 	}
-	c.Hub.broadcast <- chatBytes
+	broadCast := &BroadCast{
+		Client:  c,
+		RoomID:  &reqChat.RoomID,
+		Content: chatBytes,
+	}
+	c.Hub.broadcast <- broadCast
 	c.ollamaHandler(reqChat, *roomHistory)
 }
 
@@ -105,5 +124,10 @@ func (c *Client) ollamaHandler(reqChat domain.ChatMessage, roomHistory chatDomai
 		log.Printf("error: %v", err)
 		return
 	}
-	c.Hub.broadcast <- chatBytes
+	broadCast := &BroadCast{
+		Client:  c,
+		RoomID:  &reqChat.RoomID,
+		Content: chatBytes,
+	}
+	c.Hub.broadcast <- broadCast
 }

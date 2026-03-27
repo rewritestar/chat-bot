@@ -17,8 +17,24 @@ func Main(r *gin.RouterGroup) {
 
 	roomRouter := r.Group("rooms")
 
+	roomRouter.GET("", func(ctx *gin.Context) {
+		workerID, err := interactor.RoomIndexController(ctx)
+		if err != nil {
+			interactor.ErrorPresenter(ctx, http.StatusBadRequest, err)
+			return
+		}
+
+		roomList, err := service.IndexRoom(workerID)
+		if err != nil {
+			interactor.ErrorPresenter(ctx, http.StatusInternalServerError, err)
+			return
+		}
+
+		interactor.RoomIndexPresenter(ctx, roomList)
+	})
+
 	roomRouter.POST("", func(ctx *gin.Context) {
-		reqData, err := interactor.RoomController(ctx)
+		reqData, err := interactor.RoomSaveController(ctx)
 		if err != nil {
 			interactor.ErrorPresenter(ctx, http.StatusBadRequest, err)
 			return
@@ -49,14 +65,14 @@ func Main(r *gin.RouterGroup) {
 		interactor.RoomPresenter(ctx, room)
 	})
 
-	roomRouter.GET("", func(ctx *gin.Context) {
-		reqData, err := interactor.RoomController(ctx)
+	roomRouter.GET("/:id", func(ctx *gin.Context) {
+		roomID, err := interactor.RoomShowController(ctx)
 		if err != nil {
 			interactor.ErrorPresenter(ctx, http.StatusBadRequest, err)
 			return
 		}
 
-		room, err := service.SingleRoom(*reqData)
+		room, err := service.ShowRoom(roomID)
 		if err != nil {
 			interactor.ErrorPresenter(ctx, http.StatusInternalServerError, err)
 			return

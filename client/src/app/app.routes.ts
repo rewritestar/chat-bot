@@ -3,8 +3,9 @@ import { AuthLayout } from './features/auth/layout/auth-layout.component';
 import { AuthGuard } from './core/services/auth-guard';
 import { Signin } from './features/auth/components/signin/signin.component';
 import { Login } from './features/auth/components/login/login.component';
-import { Room } from './features/room/components/room.component';
+import { RoomList } from './features/room/components/room-list/room-list.component';
 import { AppLayout } from './core/layout/app-layout.component';
+import { Room } from './features/room/components/room/room.component';
 
 export const routes: Routes = [
   {
@@ -12,7 +13,12 @@ export const routes: Routes = [
     component: AppLayout,
     children: [
       {
-        path: '',
+        path: 'room',
+        component: RoomList,
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'room/:roomId',
         component: Room,
         canActivate: [AuthGuard],
       },

@@ -15,33 +15,18 @@ func NewRoomService(repo repository.RoomRepository) RoomService {
 	}
 }
 
+func (s *roomService) IndexRoom(workerID uint) (*domain.RoomList, error) {
+	return s.repo.FindAllRoom(workerID)
+}
+
+func (s *roomService) ShowRoom(roomID uint) (*domain.Room, error) {
+	return s.repo.FindRoomByID(roomID)
+}
+
 func (s *roomService) SaveRoom(reqData domain.Room) (*domain.Room, error) {
 	return s.repo.SaveRoom(reqData)
 }
 
 func (s *roomService) UpdateRoom(reqData domain.Room) (*domain.Room, error) {
 	return s.repo.UpdateRoom(reqData)
-}
-
-func (s *roomService) ShowRoom() (*domain.Room, error) {
-	return s.repo.FindRoom()
-}
-
-func (s *roomService) SingleRoom(reqData domain.Room) (*domain.Room, error) {
-	var room *domain.Room
-	var err error
-	room, err = s.repo.FindRoom()
-	if err != nil {
-		return nil, err
-	}
-	if room.ID == 0 {
-		if _, err := s.repo.SaveRoom(reqData); err != nil {
-			return nil, err
-		}
-		room, err = s.repo.FindRoom()
-		if err != nil {
-			return nil, err
-		}
-	}
-	return room, nil
 }

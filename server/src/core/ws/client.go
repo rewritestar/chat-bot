@@ -53,6 +53,8 @@ type Client struct {
 	svc chat.ChatService
 
 	ollamaSvc ollama.OllamaService
+
+	roomIDs []uint
 }
 
 func NewClient(hub *Hub, conn *websocket.Conn, send chan []byte, ctx *gin.Context, svc chat.ChatService, ollamaSvc ollama.OllamaService) *Client {
@@ -63,6 +65,7 @@ func NewClient(hub *Hub, conn *websocket.Conn, send chan []byte, ctx *gin.Contex
 		ctx,
 		svc,
 		ollamaSvc,
+		[]uint{},
 	}
 }
 

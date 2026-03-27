@@ -8,3 +8,5 @@ type Room struct {
 	Creator  Worker   `gorm:"foreignKey:creatorID"`
 	ChatList ChatList `gorm:"foreignKey:RoomID"`
 }
+
+type RoomList []Room

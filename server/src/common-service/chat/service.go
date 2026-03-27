@@ -22,3 +22,7 @@ func (s *chatService) SaveChat(chat domain.Chat) (*domain.Chat, error) {
 func (s *chatService) FindHistoryByRoomID(roomID uint) (*domain.Room, error) {
 	return s.repo.FindHistoryByRoomID(roomID)
 }
+
+func (s *chatService) FindRoomByCreatorID(creatorID uint) (*domain.RoomList, error) {
+	return s.repo.FindRoomByCreatorID(creatorID)
+}

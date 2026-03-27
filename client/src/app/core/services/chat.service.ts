@@ -20,6 +20,9 @@ export class ChatService {
   }
 
   connect() {
+    if (this.socket && this.socket.readyState === this.socket.OPEN) {
+      return;
+    }
     this.socket = new WebSocket(this.wsUrl);
 
     this.socket.onopen = () => this.onOpen();
@@ -51,8 +54,6 @@ export class ChatService {
   }
 
   private onOpen() {
-    console.log('WebSocket connected');
-
     const req = {
       type: environment.messageType.auth,
       data: {
@@ -61,6 +62,7 @@ export class ChatService {
     };
     if (this.socket.readyState === this.socket.OPEN) {
       this.socket.send(JSON.stringify(req));
+      console.log('WebSocket connected');
     }
   }
 }

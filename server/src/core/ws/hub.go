@@ -1,33 +1,33 @@
-// Copyright 2013 The Gorilla WebSocket Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package ws
 
-// Hub maintains the set of active clients and broadcasts messages to the
-// clients.
 type Hub struct {
-	// Registered clients.
-	clients map[*Client]bool
-
-	// Inbound messages from the clients.
-	broadcast chan []byte
-
-	// Register requests from the clients.
 	Register chan *Client
 
-	// Unregister requests from clients.
 	unregister chan *Client
+
+	broadcast chan *BroadCast
+
+	RoomList map[uint]*RoomHub
+}
+
+type BroadCast struct {
+	Client  *Client
+	RoomID  *uint
+	Content []byte
+}
+
+type RoomHub struct {
+	clients map[*Client]bool
 }
 
 var hub *Hub
 
 func NewHub() {
 	newHub := &Hub{
-		broadcast:  make(chan []byte),
 		Register:   make(chan *Client),
 		unregister: make(chan *Client),
-		clients:    make(map[*Client]bool),
+		broadcast:  make(chan *BroadCast),
+		RoomList:   make(map[uint]*RoomHub),
 	}
 	hub = newHub
 }
@@ -40,19 +40,38 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.Register:
-			h.clients[client] = true
-		case client := <-h.unregister:
-			if _, ok := h.clients[client]; ok {
-				delete(h.clients, client)
-				close(client.send)
+			for _, roomID := range client.roomIDs {
+				_, ok := h.RoomList[roomID]
+				if !ok {
+					h.RoomList[roomID] = &RoomHub{
+						clients: make(map[*Client]bool),
+					}
+				}
+				h.RoomList[roomID].clients[client] = true
 			}
-		case message := <-h.broadcast:
-			for client := range h.clients {
+		case client := <-h.unregister:
+			close(client.send)
+			for _, roomID := range client.roomIDs {
+				roomHub, ok := h.RoomList[roomID]
+				if ok {
+					delete(roomHub.clients, client)
+				}
+			}
+		case broadCast := <-h.broadcast:
+			roomHub, ok := h.RoomList[*broadCast.RoomID]
+			if !ok {
+				h.RoomList[*broadCast.RoomID] = &RoomHub{
+					clients: make(map[*Client]bool),
+				}
+				h.RoomList[*broadCast.RoomID].clients[broadCast.Client] = true
+				roomHub = h.RoomList[*broadCast.RoomID]
+			}
+			for client := range roomHub.clients {
 				select {
-				case client.send <- message:
+				case client.send <- broadCast.Content:
 				default:
 					close(client.send)
-					delete(h.clients, client)
+					delete(roomHub.clients, client)
 				}
 			}
 		}

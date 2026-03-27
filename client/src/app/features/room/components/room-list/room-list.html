@@ -1,0 +1,65 @@
+@if (roomList$ | async; as roomList) {
+  <div class="bg-white w-2xl h-[90dvh] flex flex-col rounded-xl shadow-xl overflow-hidden">
+    <div class="flex justify-between">
+      <div class="border-b-2 border-b-gray-100 p-4">채팅방</div>
+      <div class="p-4 cursor-pointer"><span (click)="openNewRoom()">+</span></div>
+    </div>
+    <div class="m-4 flex flex-col min-h-0">
+      <ol class="flex flex-col overflow-auto">
+        @for (room of roomList.list; track room.id) {
+          <li>
+            <div
+              class="flex flex-col border-b-2 border-b-gray-100 p-4 cursor-pointer"
+              (click)="openRoom(room.id)"
+            >
+              <span>{{ room.name }}</span>
+              @if (room.chatList?.length > 0) {
+                <span class="text-sm text-gray-500">{{ room.chatList[0].content }}</span>
+              }
+            </div>
+          </li>
+        }
+      </ol>
+    </div>
+  </div>
+}
+@if (isOpenNewRoom) {
+  <form [formGroup]="roomForm" (ngSubmit)="onRoomSubmit()" for="roomSubmit">
+    <div class="fixed top-0 left-0 w-full h-full bg-gray-950/50 flex justify-center items-center">
+      <div class="flex flex-col bg-white w-xl h-150 rounded-xl shadow-xl overflow-hidden">
+        <div class="flex justify-between border-b-2 border-b-gray-100 p-4">
+          <span>새 채팅방 생성</span>
+          <div class="cursor-pointer" (click)="closeNewRoom()">X</div>
+        </div>
+        <div class="flex-1 min-h-0 overflow-auto">
+          <div class="p-4">
+            <div class="flex flex-col mb-2">
+              <label for="name" class="mb-1">방이름</label>
+              <input
+                type="text"
+                class="rounded-md border-2 border-gray-200 w-full p-2"
+                formControlName="name"
+              />
+            </div>
+            <div class="flex flex-col mb-2">
+              <label for="aiSystem" class="mb-1">성격 명령어</label>
+              <textarea
+                id="aiSystem"
+                class="rounded-md border-2 border-gray-200 w-full h-100 resize-none focus:outline-none p-2"
+                formControlName="aiSystem"
+              ></textarea>
+            </div>
+            <div class="flex flex-col mt-4">
+              <input
+                id="roomSubmit"
+                type="submit"
+                value="저장"
+                class="bg-blue-400 rounded-md text-white w-full h-10 cursor-pointer"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+}

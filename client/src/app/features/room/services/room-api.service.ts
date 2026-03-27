@@ -11,8 +11,16 @@ export class RoomApiService {
     this.apiUrl = environment.apiUrl;
   }
 
-  getRoom() {
+  indexRoom() {
     return this.http.get(`${this.apiUrl}/rooms`);
+  }
+
+  getRoom(id: number) {
+    return this.http.get(`${this.apiUrl}/rooms/${id}`);
+  }
+
+  saveRoom(data: any) {
+    return this.http.post(`${this.apiUrl}/rooms`, data);
   }
 
   updateRoom(id: number, data: any) {

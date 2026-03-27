@@ -13,6 +13,7 @@ import (
 type ChatRepository interface {
 	SaveChat(domain.Chat) (*domain.Chat, error)
 	FindHistoryByRoomID(uint) (*domain.Room, error)
+	FindRoomByCreatorID(uint) (*domain.RoomList, error)
 }
 
 type chatRepository struct {
@@ -50,6 +51,21 @@ func (r *chatRepository) FindHistoryByRoomID(roomID uint) (*domain.Room, error) 
 		Error
 
 	sort.Sort(result.ChatList)
+
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (r *chatRepository) FindRoomByCreatorID(creatorID uint) (*domain.RoomList, error) {
+	result := domain.RoomList{}
+
+	err := r.db.Model(&result).
+		Where("creator_id = ?", creatorID).
+		Find(&result).
+		Error
 
 	if err != nil {
 		log.Println(err.Error())

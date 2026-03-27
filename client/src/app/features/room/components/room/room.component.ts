@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { RoomApiService } from '../services/room-api.service';
+import { RoomApiService } from '../../services/room-api.service';
 import { AsyncPipe } from '@angular/common';
 import { BehaviorSubject, Observable, startWith, Subject, switchMap, tap } from 'rxjs';
-import { AuthService } from '../../../core/services/auth.service';
-import { ChatService } from '../../../core/services/chat.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { ChatService } from '../../../../core/services/chat.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'room',
@@ -13,8 +14,9 @@ import { ChatService } from '../../../core/services/chat.service';
 })
 export class Room {
   private reload$ = new Subject<void>();
+
   room$: Observable<any>;
-  roomId: number = 0;
+  roomId!: number;
   workerId: number;
   chatList$ = new BehaviorSubject<any[]>([]);
   isOpenConfig: boolean = false;
@@ -36,19 +38,20 @@ export class Room {
     private roomApi: RoomApiService,
     private authService: AuthService,
     private chatService: ChatService,
+    private route: ActivatedRoute,
+    private router: Router,
   ) {
+    this.roomId = Number(this.route.snapshot.paramMap.get('roomId'));
     this.room$ = this.reload$.pipe(
       startWith(void 0),
-      switchMap(() => this.roomApi.getRoom()),
+      switchMap(() => this.roomApi.getRoom(this.roomId)),
       tap((room: any) => {
-        this.roomId = room.id;
         this.chatList$.next(room?.chatList);
         this.roomForm.patchValue(room);
       }),
     );
     this.workerId = this.authService.getId();
 
-    this.chatService.connect();
     this.chatService.getMessage().subscribe((data) => {
       const current = this.chatList$.value || [];
       this.chatList$.next([...current, data]);
@@ -85,7 +88,7 @@ export class Room {
       aiSystem: this.roomForm.value.aiSystem?.trim(),
     };
 
-    this.roomApi.updateRoom(this.roomId, req).subscribe(() => {
+    this.roomApi.updateRoom(Number(this.roomId), req).subscribe(() => {
       this.closeConfig();
       this.roadData();
     });
@@ -105,5 +108,9 @@ export class Room {
 
   isMyChat(chat: any): boolean {
     return chat.creatorId === this.workerId;
+  }
+
+  goRoomList() {
+    this.router.navigate(['room']);
   }
 }

@@ -10,11 +10,14 @@ $ npm run start
 
 ## Problem
 
+- 로그아웃(토큰 삭제, WEBSOCKET COLSE)
 - AI 선톡 기능(랜덤으로 AI에게 요청보내고 답변만 사용자에게 송출)
+- Room 도 websock 실시간 업데이트 필요
 - 에러처리
 - 웹소켓 close 되면 새로고침 해야하는 문제
 - UI 개선(마크다운 CHAT 개선, CHAT 크기 좁은 문제, CHAT 로딩 ui, 스크롤 하단 고정)
 - checkOrigin 강제 true 수정하기
+- PWA 알림
 
 ## AI 채팅 기억력
 
@@ -28,6 +31,7 @@ $ npm run start
 
 ## 작업 완료
 
+- 멀티 Room 리스트
 - 채팅방 구현
 - HTTP JWT 검증
 - 웹소켓 JWT 검증
