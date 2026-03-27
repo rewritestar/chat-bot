@@ -24,9 +24,17 @@ func (s *roomService) ShowRoom(roomID uint) (*domain.Room, error) {
 }
 
 func (s *roomService) SaveRoom(reqData domain.Room) (*domain.Room, error) {
-	return s.repo.SaveRoom(reqData)
+	savedRoom, err := s.repo.SaveRoom(reqData)
+	if err != nil {
+		return nil, err
+	}
+	return savedRoom, nil
 }
 
 func (s *roomService) UpdateRoom(reqData domain.Room) (*domain.Room, error) {
 	return s.repo.UpdateRoom(reqData)
+}
+
+func (s *roomService) SoftDeleteRoom(id uint) error {
+	return s.repo.SoftDeleteRoom(id)
 }

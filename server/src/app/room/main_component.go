@@ -80,4 +80,20 @@ func Main(r *gin.RouterGroup) {
 
 		interactor.RoomPresenter(ctx, room)
 	})
+
+	roomRouter.DELETE("/:id", func(ctx *gin.Context) {
+		roomID, err := interactor.RoomShowController(ctx)
+		if err != nil {
+			interactor.ErrorPresenter(ctx, http.StatusBadRequest, err)
+			return
+		}
+
+		err = service.SoftDeleteRoom(roomID)
+		if err != nil {
+			interactor.ErrorPresenter(ctx, http.StatusInternalServerError, err)
+			return
+		}
+
+		interactor.DeletedPresenter(ctx)
+	})
 }

@@ -75,6 +75,10 @@ func CreatedPresenter(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, nil)
 }
 
+func DeletedPresenter(ctx *gin.Context) {
+	ctx.JSON(http.StatusNoContent, nil)
+}
+
 func ErrorPresenter(ctx *gin.Context, statusCode int, err error) {
 	ctx.JSON(statusCode, gin.H{"error": err.Error()})
 }

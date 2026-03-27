@@ -6,19 +6,24 @@ import { Login } from './features/auth/components/login/login.component';
 import { RoomList } from './features/room/components/room-list/room-list.component';
 import { AppLayout } from './core/layout/app-layout.component';
 import { Room } from './features/room/components/room/room.component';
+import { Dashboard } from './features/dashboard/dashboard.component';
 
 export const routes: Routes = [
   {
     path: '',
+    component: Dashboard,
+  },
+  {
+    path: 'room',
     component: AppLayout,
     children: [
       {
-        path: 'room',
+        path: '',
         component: RoomList,
         canActivate: [AuthGuard],
       },
       {
-        path: 'room/:roomId',
+        path: ':roomId',
         component: Room,
         canActivate: [AuthGuard],
       },

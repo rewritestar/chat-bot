@@ -7,7 +7,7 @@ import { AuthService } from './auth.service';
 @Injectable({
   providedIn: 'root',
 })
-export class ChatService {
+export class WsService {
   private socket!: WebSocket;
   private messageSubject = new Subject<any>();
   private messages$ = this.messageSubject.asObservable();
@@ -51,6 +51,10 @@ export class ChatService {
 
   getMessage() {
     return this.messages$;
+  }
+
+  close() {
+    this.socket.close();
   }
 
   private onOpen() {

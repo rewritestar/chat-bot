@@ -22,7 +22,7 @@ func (r *roomRepository) FindAllRoom(workerID uint) (*domain.RoomList, error) {
 	result := domain.RoomList{}
 
 	err := r.db.Model(&result).
-		Where("creator_id = ?", workerID).
+		Where("creator_id = ? AND is_deleted = ?", workerID, false).
 		Preload("Creator").
 		Preload("ChatList", func(db *gorm.DB) *gorm.DB {
 			return db.Order("date_created DESC")
@@ -70,4 +70,19 @@ func (r *roomRepository) UpdateRoom(room domain.Room) (*domain.Room, error) {
 		return nil, err
 	}
 	return &room, nil
+}
+
+func (r *roomRepository) SoftDeleteRoom(id uint) error {
+	err := r.db.Model(&domain.Room{}).
+		Where("id = ?", id).
+		UpdateColumns(map[string]interface{}{
+			"is_deleted": true,
+		}).
+		Error
+
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+	return nil
 }

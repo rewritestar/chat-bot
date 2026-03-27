@@ -1,6 +1,6 @@
-import { ChatService } from './core/services/chat.service';
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { WsService } from './core/services/ws.service';
 
 @Component({
   selector: 'app-root',
@@ -9,7 +9,7 @@ import { RouterOutlet } from '@angular/router';
 })
 export class App {
   protected readonly title = signal('client');
-  constructor(private chatService: ChatService) {
-    this.chatService.connect();
+  constructor(private wsService: WsService) {
+    this.wsService.connect();
   }
 }

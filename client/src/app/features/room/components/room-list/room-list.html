@@ -1,22 +1,26 @@
 @if (roomList$ | async; as roomList) {
   <div class="bg-white w-2xl h-[90dvh] flex flex-col rounded-xl shadow-xl overflow-hidden">
-    <div class="flex justify-between">
-      <div class="border-b-2 border-b-gray-100 p-4">채팅방</div>
-      <div class="p-4 cursor-pointer"><span (click)="openNewRoom()">+</span></div>
+    <div class="flex justify-between border-b-2 border-b-gray-100">
+      <div class="p-4">채팅방</div>
+      <div class="p-4 cursor-pointer">
+        <span (click)="openNewRoom()"><i class="fa-regular fa-square-plus"></i></span>
+      </div>
     </div>
-    <div class="m-4 flex flex-col min-h-0">
+    <div class="mx-4 flex flex-col min-h-0">
       <ol class="flex flex-col overflow-auto">
         @for (room of roomList.list; track room.id) {
-          <li>
-            <div
-              class="flex flex-col border-b-2 border-b-gray-100 p-4 cursor-pointer"
-              (click)="openRoom(room.id)"
-            >
+          <li class="flex justify-between border-b-2 border-b-gray-100 h-25">
+            <div class="flex flex-col p-4 cursor-pointer" (click)="openRoom(room.id)">
               <span>{{ room.name }}</span>
               @if (room.chatList?.length > 0) {
-                <span class="text-sm text-gray-500">{{ room.chatList[0].content }}</span>
+                <span class="text-sm text-gray-500 overflow-hidden text-ellipsis">{{
+                  room.chatList[0].content
+                }}</span>
               }
             </div>
+            <button (click)="openDeleteRoom(room.id)" class="cursor-pointer">
+              <i class="fa-regular fa-trash-can"></i>
+            </button>
           </li>
         }
       </ol>
@@ -28,8 +32,10 @@
     <div class="fixed top-0 left-0 w-full h-full bg-gray-950/50 flex justify-center items-center">
       <div class="flex flex-col bg-white w-xl h-150 rounded-xl shadow-xl overflow-hidden">
         <div class="flex justify-between border-b-2 border-b-gray-100 p-4">
-          <span>새 채팅방 생성</span>
-          <div class="cursor-pointer" (click)="closeNewRoom()">X</div>
+          <span>채팅방 생성</span>
+          <div class="cursor-pointer" (click)="closeNewRoom()">
+            <i class="fa-solid fa-xmark"></i>
+          </div>
         </div>
         <div class="flex-1 min-h-0 overflow-auto">
           <div class="p-4">
@@ -50,12 +56,47 @@
               ></textarea>
             </div>
             <div class="flex flex-col mt-4">
-              <input
+              <button
                 id="roomSubmit"
                 type="submit"
-                value="저장"
-                class="bg-blue-400 rounded-md text-white w-full h-10 cursor-pointer"
-              />
+                class="bg-[#6391ee] rounded-md text-white w-full h-10 cursor-pointer"
+              >
+                <i class="fa-solid fa-arrow-up-from-bracket"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+}
+
+@if (isOpenDeleteRoom) {
+  <form [formGroup]="roomForm" (ngSubmit)="onDeleteRoom()" for="roomDelete">
+    <div class="fixed top-0 left-0 w-full h-full bg-gray-950/50 flex justify-center items-center">
+      <div class="flex flex-col bg-white w-lg rounded-xl shadow-xl overflow-hidden">
+        <div class="flex justify-between border-b-2 border-b-gray-100 p-4">
+          <span>채팅방을 정말로 삭제하시겠습니까?</span>
+          <div class="cursor-pointer" (click)="closeDeleteRoom()">
+            <i class="fa-solid fa-xmark"></i>
+          </div>
+        </div>
+        <div class="flex-1 min-h-0 overflow-auto">
+          <div class="p-4 text-sm">
+            <div class="mb-4">
+              <span
+                >채팅 내용은 바로 삭제되지 않고 일정시간 보관됩니다. <br />즉각적인 삭제를 원하실
+                경우 관리자에게 문의바랍니다.
+              </span>
+            </div>
+            <div class="flex flex-col mt-4">
+              <button
+                id="roomDelete"
+                type="submit"
+                class="bg-[#6391ee] rounded-md text-white w-full h-10 cursor-pointer"
+              >
+                <i class="fa-solid fa-eraser"></i>
+              </button>
             </div>
           </div>
         </div>

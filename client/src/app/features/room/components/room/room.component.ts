@@ -1,18 +1,29 @@
-import { Component, Input } from '@angular/core';
+import {
+  AfterViewChecked,
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Input,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { RoomApiService } from '../../services/room-api.service';
 import { AsyncPipe } from '@angular/common';
-import { BehaviorSubject, Observable, startWith, Subject, switchMap, tap } from 'rxjs';
-import { AuthService } from '../../../../core/services/auth.service';
-import { ChatService } from '../../../../core/services/chat.service';
 import { ActivatedRoute, Router } from '@angular/router';
+
+import { BehaviorSubject, Observable, startWith, Subject, switchMap, tap } from 'rxjs';
+
+import { RoomApiService } from '../../services/room-api.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { WsService } from '../../../../core/services/ws.service';
 
 @Component({
   selector: 'room',
   templateUrl: 'room.html',
   imports: [ReactiveFormsModule, AsyncPipe],
 })
-export class Room {
+export class Room implements AfterViewChecked {
+  @ViewChild('scrollBottom') scrollBottom!: ElementRef;
   private reload$ = new Subject<void>();
 
   room$: Observable<any>;
@@ -37,7 +48,7 @@ export class Room {
   constructor(
     private roomApi: RoomApiService,
     private authService: AuthService,
-    private chatService: ChatService,
+    private wsService: WsService,
     private route: ActivatedRoute,
     private router: Router,
   ) {
@@ -52,10 +63,15 @@ export class Room {
     );
     this.workerId = this.authService.getId();
 
-    this.chatService.getMessage().subscribe((data) => {
+    this.wsService.getMessage().subscribe((data) => {
       const current = this.chatList$.value || [];
       this.chatList$.next([...current, data]);
+      this.scrollToBottom(true);
     });
+  }
+
+  ngAfterViewChecked() {
+    this.scrollToBottom(false);
   }
 
   roadData() {
@@ -73,7 +89,7 @@ export class Room {
       content: this.chatForm.value.content?.trim(),
     };
 
-    this.chatService.sendMessage(req);
+    this.wsService.sendMessage(req);
     this.resetChatForm();
   }
 
@@ -112,5 +128,14 @@ export class Room {
 
   goRoomList() {
     this.router.navigate(['room']);
+  }
+
+  scrollToBottom(smooth: boolean) {
+    const element = this.scrollBottom?.nativeElement;
+    if (element) {
+      this.scrollBottom?.nativeElement.scrollIntoView({
+        behavior: smooth ? 'smooth' : 'auto',
+      });
+    }
   }
 }

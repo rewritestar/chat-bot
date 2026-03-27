@@ -1,19 +1,12 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Component, inject } from '@angular/core';
-import { AuthService } from '../../core/services/auth.service';
-import { environment } from '../../environments/environments';
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'dashboard',
-  templateUrl: 'dashboard.html',
+  template: 'dashboard',
 })
 export class Dashboard {
-  http = inject(HttpClient);
-  constructor() {
-    this.onClick();
-  }
-
-  onClick() {
-    this.http.get(`${environment.apiUrl}/test`).subscribe();
+  constructor(private router: Router) {
+    this.router.navigate(['room']);
   }
 }

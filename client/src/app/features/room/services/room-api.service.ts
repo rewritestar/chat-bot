@@ -26,4 +26,8 @@ export class RoomApiService {
   updateRoom(id: number, data: any) {
     return this.http.put(`${this.apiUrl}/rooms/${id}`, data);
   }
+
+  deleteRoom(id: number) {
+    return this.http.delete(`${this.apiUrl}/rooms/${id}`);
+  }
 }

@@ -14,6 +14,8 @@ export class RoomList {
   private reload$ = new Subject<void>();
   roomList$: Observable<any>;
   isOpenNewRoom: boolean = false;
+  isOpenDeleteRoom: boolean = false;
+  selectedRoomId: number | null = null;
 
   roomForm = new FormGroup({
     name: new FormControl(''),
@@ -55,11 +57,31 @@ export class RoomList {
     });
   }
 
+  onDeleteRoom() {
+    if (!this.selectedRoomId) {
+      this.isOpenDeleteRoom = false;
+      return;
+    }
+    this.roomApi.deleteRoom(this.selectedRoomId).subscribe(() => {
+      this.closeDeleteRoom();
+      this.roadData();
+    });
+  }
+
   openNewRoom() {
     this.isOpenNewRoom = true;
   }
 
   closeNewRoom() {
     this.isOpenNewRoom = false;
+  }
+
+  openDeleteRoom(roomId: number) {
+    this.selectedRoomId = roomId;
+    this.isOpenDeleteRoom = true;
+  }
+
+  closeDeleteRoom() {
+    this.isOpenDeleteRoom = false;
   }
 }
