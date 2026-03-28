@@ -13,6 +13,7 @@ CREATE TABLE room (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255),
     ai_system VARCHAR(10000),
+    ai_proactive_next_date TIMESTAMP,
     is_deleted BOOLEAN DEFAULT 0 NOT NULL,
     creator_id INT UNSIGNED NOT NULL,
     date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

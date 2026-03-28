@@ -15,7 +15,7 @@ type RequestBody struct {
 	Stream   bool             `json:"stream"`
 }
 
-func (r *RequestBody) SetBody(roomHistory chatDomain.Room, userInput string) {
+func (r *RequestBody) SetBody(roomHistory chatDomain.Room, reqChat RequestChat) {
 	r.Model = core_values.OllamaModel
 	r.Options = RequestOptions{
 		Temperature: 0.7,
@@ -46,8 +46,8 @@ func (r *RequestBody) SetBody(roomHistory chatDomain.Room, userInput string) {
 
 	// 가장 최근 user 채팅
 	r.Messages = append(r.Messages, RequestMessage{
-		Role:    core_values.OllamaRoleUser,
-		Content: userInput,
+		Role:    reqChat.Role,
+		Content: reqChat.Content,
 	})
 
 }
@@ -81,4 +81,9 @@ type ResponseMessage struct {
 	Role     string `json:"role"`
 	Content  string `json:"content"`
 	Thinking string `json:"thinking"`
+}
+
+type RequestChat struct {
+	Role    string
+	Content string
 }

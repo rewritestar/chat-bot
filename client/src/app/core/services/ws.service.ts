@@ -9,7 +9,7 @@ import { AuthService } from './auth.service';
 })
 export class WsService {
   private socket!: WebSocket;
-  private messageSubject = new Subject<any>();
+  private messageSubject = new Subject<MessageType>();
   private messages$ = this.messageSubject.asObservable();
   private wsUrl = '';
   private token = '';
@@ -28,7 +28,7 @@ export class WsService {
     this.socket.onopen = () => this.onOpen();
 
     this.socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+      const data: MessageType = JSON.parse(event.data);
       this.messageSubject.next(data);
     };
 
@@ -53,6 +53,18 @@ export class WsService {
     return this.messages$;
   }
 
+  joinRoom(roomId: number) {
+    if (this.socket && this.socket.readyState === this.socket.OPEN) {
+      const req = {
+        type: environment.messageType.join,
+        data: {
+          roomId: roomId,
+        },
+      };
+      this.socket.send(JSON.stringify(req));
+    }
+  }
+
   close() {
     this.socket.close();
   }
@@ -70,3 +82,8 @@ export class WsService {
     }
   }
 }
+
+type MessageType = {
+  roomId: number;
+  content: string;
+};

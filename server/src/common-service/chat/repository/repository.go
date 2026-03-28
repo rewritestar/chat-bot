@@ -3,6 +3,7 @@ package repository
 import (
 	"log"
 	"sort"
+	"time"
 
 	"chat-bot/src/common-service/chat/domain"
 	"chat-bot/src/common-service/chat/values"
@@ -12,8 +13,11 @@ import (
 
 type ChatRepository interface {
 	SaveChat(domain.Chat) (*domain.Chat, error)
+	UpdateRoom(domain.Room) (*domain.Room, error)
+
 	FindHistoryByRoomID(uint) (*domain.Room, error)
 	FindRoomByCreatorID(uint) (*domain.RoomList, error)
+	FindAllRoomTickAiSchedule() (*domain.RoomList, error)
 }
 
 type chatRepository struct {
@@ -32,6 +36,14 @@ func (r *chatRepository) SaveChat(chat domain.Chat) (*domain.Chat, error) {
 		return nil, err
 	}
 	return &chat, nil
+}
+
+func (r *chatRepository) UpdateRoom(room domain.Room) (*domain.Room, error) {
+	if err := r.db.Updates(&room).Error; err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+	return &room, nil
 }
 
 func (r *chatRepository) FindHistoryByRoomID(roomID uint) (*domain.Room, error) {
@@ -64,6 +76,25 @@ func (r *chatRepository) FindRoomByCreatorID(creatorID uint) (*domain.RoomList, 
 
 	err := r.db.Model(&result).
 		Where("creator_id = ?", creatorID).
+		Find(&result).
+		Error
+
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (r *chatRepository) FindAllRoomTickAiSchedule() (*domain.RoomList, error) {
+	result := domain.RoomList{}
+
+	err := r.db.Model(&result).
+		Where(`ai_proactive_next_date <= ? OR ai_proactive_next_date IS NULL`, time.Now()).
+		Where("is_deleted = ?", false).
+		Preload("ChatList", func(db *gorm.DB) *gorm.DB {
+			return db.Order("date_created DESC")
+		}).
 		Find(&result).
 		Error
 

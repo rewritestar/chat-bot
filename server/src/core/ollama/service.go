@@ -21,11 +21,11 @@ func NewOllamaService() OllamaService {
 	return &ollamaService{}
 }
 
-func (s *ollamaService) Chat(input string, roomHistory chatDomain.Room) *domain.ResponseBody {
+func (s *ollamaService) Chat(reqChat domain.RequestChat, roomHistory chatDomain.Room) *domain.ResponseBody {
 	chatUrl := fmt.Sprintf("%s/chat", core_values.OllamaApiURL)
 
 	reqBody := domain.RequestBody{}
-	reqBody.SetBody(roomHistory, input)
+	reqBody.SetBody(roomHistory, reqChat)
 
 	var body bytes.Buffer
 	if err := json.NewEncoder(&body).Encode(reqBody); err != nil {

@@ -3,6 +3,7 @@ export const environment = {
   apiUrl: 'http://localhost:4200/api',
   messageType: {
     auth: 'AUTH',
+    join: 'JOIN',
     chat: 'CHAT',
   },
 };

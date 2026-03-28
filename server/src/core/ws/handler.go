@@ -7,6 +7,7 @@ import (
 
 	chatDomain "chat-bot/src/common-service/chat/domain"
 	chatMessage "chat-bot/src/common-service/chat/message"
+	ollamaDomain "chat-bot/src/core/ollama/domain"
 	core_values "chat-bot/src/core/values"
 	"chat-bot/src/core/ws/domain"
 	"chat-bot/src/core/ws/values"
@@ -16,18 +17,20 @@ import (
 func (c *Client) readHandler(message []byte) {
 	reqMsg := domain.Message{}
 	if err := json.Unmarshal(message, &reqMsg); err != nil {
-		log.Printf("error: %v", err)
+		log.Println(err.Error())
 		return
 	}
 	dataBytes, err := json.Marshal(reqMsg.Data)
 	if err != nil {
-		log.Printf("error: %v", err)
+		log.Println(err.Error())
 		return
 	}
 
 	switch reqMsg.Type {
 	case values.MessageTypeAuth:
 		c.authHandler(dataBytes)
+	case values.MessageTypeJoin:
+		c.joinHandler(dataBytes)
 	case values.MessageTypeChat:
 		c.chatHandler(dataBytes)
 	default:
@@ -39,23 +42,21 @@ func (c *Client) authHandler(data []byte) {
 	json.Unmarshal(data, &reqAuth)
 
 	if err := c.authorizeWsJwt(reqAuth.Token); err != nil {
-		log.Printf("error: %v", err)
+		log.Println(err.Error())
 		return
 	}
-
-	workerID, ok := c.ctx.Get(core_values.WorkerIDKey)
-	if !ok {
-		err := errors.New("worker id does not exist.")
-		log.Printf("error: %v", err)
-		return
-	}
-	roomList, err := c.svc.FindRoomByCreatorID(workerID.(uint))
-	if err != nil {
-		log.Printf("error: %v", err)
-		return
-	}
-	c.roomIDs = roomList.GetIDs()
 	c.Hub.Register <- c
+}
+
+func (c *Client) joinHandler(data []byte) {
+	reqJoin := domain.JoinMessage{}
+	json.Unmarshal(data, &reqJoin)
+
+	joinRoom := &JoinRoom{
+		RoomID: reqJoin.RoomID,
+		Client: c,
+	}
+	c.Hub.JoinRoom <- joinRoom
 }
 
 func (c *Client) chatHandler(data []byte) {
@@ -65,12 +66,12 @@ func (c *Client) chatHandler(data []byte) {
 	userID, ok := c.ctx.Get(core_values.WorkerIDKey)
 	if !ok {
 		err := errors.New("worker id does not exist.")
-		log.Printf("error: %v", err)
+		log.Println(err.Error())
 		return
 	}
 	roomHistory, err := c.svc.FindHistoryByRoomID(reqChat.RoomID)
 	if err != nil {
-		log.Printf("error: %v", err)
+		log.Println(err.Error())
 		return
 	}
 
@@ -81,29 +82,27 @@ func (c *Client) chatHandler(data []byte) {
 
 	savedChat, err := c.svc.SaveChat(domainChat)
 	if err != nil {
-		log.Printf("error: %v", err)
+		log.Println(err.Error())
 		return
 	}
 
 	responseChat := chatMessage.ResponseChat{}
 	responseChat.Build(savedChat)
 
-	chatBytes, err := json.Marshal(responseChat)
-	if err != nil {
-		log.Printf("error: %v", err)
-		return
-	}
 	broadCast := &BroadCast{
-		Client:  c,
-		RoomID:  &reqChat.RoomID,
-		Content: chatBytes,
+		RoomID:  reqChat.RoomID,
+		Content: responseChat,
 	}
-	c.Hub.broadcast <- broadCast
+	c.Hub.Broadcast <- broadCast
 	c.ollamaHandler(reqChat, *roomHistory)
 }
 
 func (c *Client) ollamaHandler(reqChat domain.ChatMessage, roomHistory chatDomain.Room) {
-	response := c.ollamaSvc.Chat(reqChat.Content, roomHistory)
+	reqData := ollamaDomain.RequestChat{
+		Role:    core_values.OllamaRoleUser,
+		Content: reqChat.Content,
+	}
+	response := c.ollamaSvc.Chat(reqData, roomHistory)
 
 	domainChat := chatDomain.Chat{}
 	domainChat.Content = response.Message.Content
@@ -112,22 +111,16 @@ func (c *Client) ollamaHandler(reqChat domain.ChatMessage, roomHistory chatDomai
 
 	savedChat, err := c.svc.SaveChat(domainChat)
 	if err != nil {
-		log.Printf("error: %v", err)
+		log.Println(err.Error())
 		return
 	}
 
 	responseChat := chatMessage.ResponseChat{}
 	responseChat.Build(savedChat)
 
-	chatBytes, err := json.Marshal(responseChat)
-	if err != nil {
-		log.Printf("error: %v", err)
-		return
-	}
 	broadCast := &BroadCast{
-		Client:  c,
-		RoomID:  &reqChat.RoomID,
-		Content: chatBytes,
+		RoomID:  reqChat.RoomID,
+		Content: responseChat,
 	}
-	c.Hub.broadcast <- broadCast
+	c.Hub.Broadcast <- broadCast
 }

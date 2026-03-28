@@ -63,10 +63,14 @@ export class Room implements AfterViewChecked {
     );
     this.workerId = this.authService.getId();
 
+    this.wsService.joinRoom(this.roomId);
+
     this.wsService.getMessage().subscribe((data) => {
-      const current = this.chatList$.value || [];
-      this.chatList$.next([...current, data]);
-      this.scrollToBottom(true);
+      if (data.roomId === this.roomId) {
+        const current = this.chatList$.value || [];
+        this.chatList$.next([...current, data.content]);
+        this.scrollToBottom(true);
+      }
     });
   }
 

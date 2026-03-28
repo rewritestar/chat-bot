@@ -27,7 +27,6 @@ func (s *wsService) AddClient(ctx *gin.Context) error {
 		return err
 	}
 	client := ws.NewClient(ws.GetHub(), conn, make(chan []byte, 256), ctx, s.chatService, s.ollamService)
-	client.Hub.Register <- client
 
 	go client.WritePump()
 	go client.ReadPump()

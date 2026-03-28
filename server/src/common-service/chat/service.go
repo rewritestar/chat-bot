@@ -19,10 +19,18 @@ func (s *chatService) SaveChat(chat domain.Chat) (*domain.Chat, error) {
 	return s.repo.SaveChat(chat)
 }
 
+func (s *chatService) UpdateRoom(room domain.Room) (*domain.Room, error) {
+	return s.repo.UpdateRoom(room)
+}
+
 func (s *chatService) FindHistoryByRoomID(roomID uint) (*domain.Room, error) {
 	return s.repo.FindHistoryByRoomID(roomID)
 }
 
 func (s *chatService) FindRoomByCreatorID(creatorID uint) (*domain.RoomList, error) {
 	return s.repo.FindRoomByCreatorID(creatorID)
+}
+
+func (s *chatService) FindAllRoomTickAiSchedule() (*domain.RoomList, error) {
+	return s.repo.FindAllRoomTickAiSchedule()
 }

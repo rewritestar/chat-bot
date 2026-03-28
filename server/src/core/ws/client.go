@@ -1,7 +1,3 @@
-// Copyright 2013 The Gorilla WebSocket Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package ws
 
 import (
@@ -53,8 +49,6 @@ type Client struct {
 	svc chat.ChatService
 
 	ollamaSvc ollama.OllamaService
-
-	roomIDs []uint
 }
 
 func NewClient(hub *Hub, conn *websocket.Conn, send chan []byte, ctx *gin.Context, svc chat.ChatService, ollamaSvc ollama.OllamaService) *Client {
@@ -65,7 +59,6 @@ func NewClient(hub *Hub, conn *websocket.Conn, send chan []byte, ctx *gin.Contex
 		ctx,
 		svc,
 		ollamaSvc,
-		[]uint{},
 	}
 }
 
@@ -90,11 +83,6 @@ func (c *Client) ReadPump() {
 	}
 }
 
-// writePump pumps messages from the hub to the websocket connection.
-//
-// A goroutine running writePump is started for each connection. The
-// application ensures that there is at most one writer to a connection by
-// executing all writes from this goroutine.
 func (c *Client) WritePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
