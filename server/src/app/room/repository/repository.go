@@ -21,12 +21,19 @@ func NewRoomRepository(db *gorm.DB) RoomRepository {
 func (r *roomRepository) FindAllRoom(workerID uint) (*domain.RoomList, error) {
 	result := domain.RoomList{}
 
+	subQuery := r.db.
+		Model(&domain.Chat{}).
+		Select("room_id, MAX(date_created) as last_chat_date").
+		Group("room_id")
+
 	err := r.db.Model(&result).
+		Joins("LEFT JOIN (?) as last_chat ON last_chat.room_id = id", subQuery).
 		Where("creator_id = ? AND is_deleted = ?", workerID, false).
 		Preload("Creator").
 		Preload("ChatList", func(db *gorm.DB) *gorm.DB {
 			return db.Order("date_created DESC")
 		}).
+		Order("last_chat.last_chat_date IS NOT NULL, last_chat.last_chat_date DESC").
 		Find(&result).
 		Error
 

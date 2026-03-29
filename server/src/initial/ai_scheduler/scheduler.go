@@ -12,6 +12,7 @@ import (
 	ollamaDomain "chat-bot/src/core/ollama/domain"
 	core_values "chat-bot/src/core/values"
 	"chat-bot/src/core/ws"
+	ws_values "chat-bot/src/core/ws/values"
 	"chat-bot/src/initial/ai_scheduler/values"
 	"chat-bot/src/initial/default_data"
 )
@@ -92,6 +93,7 @@ func (a *aiScheduler) generateAiTalk(roomID uint) {
 	responseChat := chatMessage.ResponseChat{}
 	responseChat.Build(savedChat)
 	broadCast := &ws.BroadCast{
+		Type:    ws_values.MessageTypeChat,
 		RoomID:  roomID,
 		Content: responseChat,
 	}

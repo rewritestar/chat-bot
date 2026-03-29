@@ -10,8 +10,6 @@ $ npm run start
 
 ## Problem
 
-- 웹소켓 close 되면 새로고침 해야하는 문제
-- Room 도 websock 실시간 업데이트 필요
 - 에러처리
 - UI 개선(마크다운 CHAT 개선, CHAT 크기 좁은 문제, CHAT 로딩 ui)
 - checkOrigin 강제 true 수정하기
@@ -27,6 +25,8 @@ $ npm run start
 
 ## 작업 완료
 
+- Room 도 websock 실시간 업데이트, 상단 이동
+- 웹소켓 close 되면 새로고침 해야하는 문제 -> reconnect 예약기능
 - AI 선톡 기능(랜덤으로 AI에게 요청보내고 답변만 사용자에게 송출)
 - UI 개선(스크롤 하단 고정)
 - 룸 (소프트)삭제

@@ -1,9 +1,12 @@
 import { Component } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { RoomApiService } from '../../services/room-api.service';
 import { AsyncPipe } from '@angular/common';
-import { Observable, startWith, Subject, switchMap, tap } from 'rxjs';
 import { Router } from '@angular/router';
+
+import { BehaviorSubject, startWith, Subject, switchMap, tap } from 'rxjs';
+
+import { RoomApiService } from '../../services/room-api.service';
+import { WsService } from '../../../../core/services/ws.service';
 
 @Component({
   selector: 'room-list',
@@ -12,7 +15,7 @@ import { Router } from '@angular/router';
 })
 export class RoomList {
   private reload$ = new Subject<void>();
-  roomList$: Observable<any>;
+  roomList$ = new BehaviorSubject<any[]>([]);
   isOpenNewRoom: boolean = false;
   isOpenDeleteRoom: boolean = false;
   selectedRoomId: number | null = null;
@@ -25,11 +28,32 @@ export class RoomList {
   constructor(
     private roomApi: RoomApiService,
     private router: Router,
+    private wsService: WsService,
   ) {
-    this.roomList$ = this.reload$.pipe(
-      startWith(void 0),
-      switchMap(() => this.roomApi.indexRoom()),
-    );
+    this.reload$
+      .pipe(
+        startWith(void 0),
+        switchMap(() => this.roomApi.indexRoom()),
+        tap((roomList: any) => {
+          this.roomList$.next(roomList.list);
+        }),
+      )
+      .subscribe();
+
+    this.wsService.getMessage().subscribe((data) => {
+      const currentList = this.roomList$.value || [];
+      const selectedRoom = currentList.find((room) => room.id === data.roomId);
+      if (!selectedRoom) {
+        return;
+      }
+
+      const updatedRoom = {
+        ...selectedRoom,
+        chatList: [data.content],
+      };
+      const updatedList = [updatedRoom, ...currentList.filter((room) => room.id !== data.roomId)];
+      this.roomList$.next(updatedList);
+    });
   }
 
   roadData() {

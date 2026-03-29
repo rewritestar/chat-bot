@@ -46,6 +46,22 @@ func (c *Client) authHandler(data []byte) {
 		return
 	}
 	c.Hub.Register <- c
+
+	userID, ok := c.ctx.Get(core_values.WorkerIDKey)
+	if ok {
+		roomList, err := c.svc.FindRoomByCreatorID(userID.(uint))
+		if err != nil {
+			return
+		}
+		for _, room := range *roomList {
+			joinRoom := &JoinRoom{
+				RoomID: room.ID,
+				Client: c,
+			}
+			c.Hub.JoinRoom <- joinRoom
+		}
+	}
+
 }
 
 func (c *Client) joinHandler(data []byte) {
@@ -90,6 +106,7 @@ func (c *Client) chatHandler(data []byte) {
 	responseChat.Build(savedChat)
 
 	broadCast := &BroadCast{
+		Type:    values.MessageTypeChat,
 		RoomID:  reqChat.RoomID,
 		Content: responseChat,
 	}
@@ -119,6 +136,7 @@ func (c *Client) ollamaHandler(reqChat domain.ChatMessage, roomHistory chatDomai
 	responseChat.Build(savedChat)
 
 	broadCast := &BroadCast{
+		Type:    values.MessageTypeChat,
 		RoomID:  reqChat.RoomID,
 		Content: responseChat,
 	}

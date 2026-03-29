@@ -11,11 +11,11 @@ export class WsService {
   private socket!: WebSocket;
   private messageSubject = new Subject<MessageType>();
   private messages$ = this.messageSubject.asObservable();
-  private wsUrl = '';
+  private wsUrl = environment.wsUrl;
   private token = '';
+  private retry = 0;
 
   constructor(private authService: AuthService) {
-    this.wsUrl = environment.wsUrl;
     this.token = this.authService.getToken();
   }
 
@@ -23,17 +23,24 @@ export class WsService {
     if (this.socket && this.socket.readyState === this.socket.OPEN) {
       return;
     }
+
     this.socket = new WebSocket(this.wsUrl);
 
     this.socket.onopen = () => this.onOpen();
 
     this.socket.onmessage = (event) => {
       const data: MessageType = JSON.parse(event.data);
-      this.messageSubject.next(data);
+      switch (data.type) {
+        case environment.messageType.chat:
+          this.messageSubject.next(data);
+          break;
+        default:
+      }
     };
 
     this.socket.onclose = () => {
-      console.log('WebSocket closed');
+      console.log('WebSocket closed.');
+      this.reconnect();
     };
 
     this.socket.onerror = (err) => {
@@ -66,7 +73,9 @@ export class WsService {
   }
 
   close() {
-    this.socket.close();
+    if (this.socket) {
+      this.socket.close();
+    }
   }
 
   private onOpen() {
@@ -76,14 +85,24 @@ export class WsService {
         token: this.token,
       },
     };
-    if (this.socket.readyState === this.socket.OPEN) {
-      this.socket.send(JSON.stringify(req));
-      console.log('WebSocket connected');
-    }
+    this.socket.send(JSON.stringify(req));
+    this.retry = 0;
+    console.log('WebSocket connected');
+  }
+
+  private reconnect() {
+    const baseDelay = Math.min(1000 * Math.pow(2, this.retry), 30000);
+    const jitter = Math.random() * 1000;
+    const delay = baseDelay + jitter;
+
+    this.retry++;
+    setTimeout(() => this.connect(), delay);
+    console.log('WebSocket reconnecting. retry: ', this.retry);
   }
 }
 
 type MessageType = {
+  type: string;
   roomId: number;
   content: string;
 };

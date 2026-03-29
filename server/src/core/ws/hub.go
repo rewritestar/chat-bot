@@ -25,8 +25,9 @@ type JoinRoom struct {
 }
 
 type BroadCast struct {
-	RoomID  uint `json:"roomId"`
-	Content any  `json:"content"`
+	Type    string `json:"type"`
+	RoomID  uint   `json:"roomId"`
+	Content any    `json:"content"`
 }
 
 type RoomHub struct {
