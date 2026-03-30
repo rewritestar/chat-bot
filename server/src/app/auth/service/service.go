@@ -3,6 +3,7 @@ package service
 import (
 	"chat-bot/src/app/auth/domain"
 	"chat-bot/src/app/auth/repository"
+	"chat-bot/src/core/cerror"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -32,7 +33,11 @@ func (s *authService) Login(reqData domain.Worker) (*domain.Token, error) {
 		return nil, err
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(found.Password), []byte(reqData.Password)); err != nil {
-		return nil, err
+		pwErr := cerror.CommonError{
+			Comment: "wrong password ",
+			Message: "비밀번호가 올바르지 않습니다.",
+		}
+		return nil, pwErr
 	}
 
 	token, err := found.GenerateToken()

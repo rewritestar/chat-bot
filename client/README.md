@@ -10,10 +10,10 @@ $ npm run start
 
 ## Problem
 
-- 에러처리
-- UI 개선(마크다운 CHAT 개선, CHAT 크기 좁은 문제, CHAT 로딩 ui)
-- checkOrigin 강제 true 수정하기
+- ollama 스케줄러 timeout 에러 발생함
+- UI 개선(login, signin(login이동버튼필요), 마크다운 CHAT 개선, CHAT 크기 좁은 문제, CHAT 로딩 ui, form 에러 inline 표시)
 - PWA 알림
+- 모바일 UI
 
   ### AI 채팅 기억력
   - 장기 기억 메모리 요약본 DB 저장하여 동봉해서 API 발송
@@ -25,6 +25,7 @@ $ npm run start
 
 ## 작업 완료
 
+- 에러처리(toastr 라이브러리로 표출. commonError 타입 지정해 커스텀 에러메시지 작성. ws 연결은 에러처리x, 재연결 시도. ws연결시 토큰 에러 발생시 close.)
 - Room 도 websock 실시간 업데이트, 상단 이동
 - 웹소켓 close 되면 새로고침 해야하는 문제 -> reconnect 예약기능
 - AI 선톡 기능(랜덤으로 AI에게 요청보내고 답변만 사용자에게 송출)

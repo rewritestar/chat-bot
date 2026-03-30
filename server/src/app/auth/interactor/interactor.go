@@ -5,6 +5,7 @@ import (
 
 	"chat-bot/src/app/auth/domain"
 	"chat-bot/src/app/auth/interactor/message"
+	"chat-bot/src/core/cerror"
 
 	"github.com/gin-gonic/gin"
 )
@@ -38,5 +39,5 @@ func LoginPresenter(ctx *gin.Context, token *domain.Token) {
 }
 
 func ErrorPresenter(ctx *gin.Context, statusCode int, err error) {
-	ctx.JSON(statusCode, gin.H{"error": err.Error()})
+	cerror.HandleError(ctx, statusCode, err)
 }

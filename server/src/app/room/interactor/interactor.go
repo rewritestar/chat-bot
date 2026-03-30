@@ -7,6 +7,7 @@ import (
 
 	"chat-bot/src/app/room/domain"
 	"chat-bot/src/app/room/interactor/message"
+	"chat-bot/src/core/cerror"
 	core_values "chat-bot/src/core/values"
 
 	"github.com/gin-gonic/gin"
@@ -80,7 +81,7 @@ func DeletedPresenter(ctx *gin.Context) {
 }
 
 func ErrorPresenter(ctx *gin.Context, statusCode int, err error) {
-	ctx.JSON(statusCode, gin.H{"error": err.Error()})
+	cerror.HandleError(ctx, statusCode, err)
 }
 
 func getID(ctx *gin.Context) (uint, error) {

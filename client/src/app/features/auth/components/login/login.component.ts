@@ -1,7 +1,11 @@
 import { Component } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+
+import { ToastrService } from 'ngx-toastr';
+
 import { AuthApiService } from '../../services/auth-api.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'login',
@@ -17,6 +21,8 @@ export class Login {
   constructor(
     private router: Router,
     private authApi: AuthApiService,
+    private authService: AuthService,
+    private toastr: ToastrService,
   ) {}
 
   onSubmit() {
@@ -31,18 +37,10 @@ export class Login {
     };
 
     this.authApi.login(req).subscribe((res: any) => {
-      this.setToken(res);
+      this.toastr.success('성공적으로 로그인되었습니다.');
+      this.authService.setToken(res);
       this.router.navigate(['']);
     });
-  }
-
-  setToken(token: any) {
-    const authSession = {
-      token: token.token,
-      exp: token.exp,
-      workerId: token.workerId,
-    };
-    localStorage.setItem('authSession', JSON.stringify(authSession));
   }
 
   goToSignin() {

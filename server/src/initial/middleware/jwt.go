@@ -1,9 +1,11 @@
 package middleware
 
 import (
+	"net/http"
 	"os"
 	"strings"
 
+	"chat-bot/src/core/cerror"
 	core_values "chat-bot/src/core/values"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +16,12 @@ func JwtMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.AbortWithStatusJSON(401, gin.H{"error": "token required"})
+			c.Abort()
+			err := cerror.CommonError{
+				Comment: "token is requried",
+				Message: "로그인이 필요합니다.",
+			}
+			cerror.HandleError(c, http.StatusUnauthorized, err)
 			return
 		}
 
@@ -25,7 +32,12 @@ func JwtMiddleware() gin.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			c.AbortWithStatusJSON(401, gin.H{"error": err.Error()})
+			c.Abort()
+			err := cerror.CommonError{
+				Comment: "token is not valid",
+				Message: "로그인 정보가 유효하지 않습니다. 다시 로그인해주세요.",
+			}
+			cerror.HandleError(c, http.StatusUnauthorized, err)
 			return
 		}
 

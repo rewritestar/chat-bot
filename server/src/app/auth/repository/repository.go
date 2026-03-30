@@ -21,7 +21,7 @@ func NewAuthRepository(db *gorm.DB) AuthRepository {
 func (r *authRepository) SaveWorker(worker domain.Worker) (*domain.Worker, error) {
 	if err := r.db.Create(&worker).Error; err != nil {
 		log.Println(err.Error())
-		return nil, err
+		return nil, duplicatedEmailError(err)
 	}
 	return &worker, nil
 }
@@ -35,7 +35,7 @@ func (r *authRepository) FindWorkerByEmail(email string) (*domain.Worker, error)
 
 	if err != nil {
 		log.Println(err.Error())
-		return nil, err
+		return nil, emailNotFoundError(err)
 	}
 	return &result, nil
 }

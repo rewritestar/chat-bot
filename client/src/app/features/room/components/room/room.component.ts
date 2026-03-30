@@ -12,6 +12,7 @@ import { AsyncPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { BehaviorSubject, Observable, startWith, Subject, switchMap, tap } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 
 import { RoomApiService } from '../../services/room-api.service';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -51,6 +52,7 @@ export class Room implements AfterViewChecked {
     private wsService: WsService,
     private route: ActivatedRoute,
     private router: Router,
+    private toastr: ToastrService,
   ) {
     this.roomId = Number(this.route.snapshot.paramMap.get('roomId'));
     this.room$ = this.reload$.pipe(
@@ -109,6 +111,7 @@ export class Room implements AfterViewChecked {
     };
 
     this.roomApi.updateRoom(Number(this.roomId), req).subscribe(() => {
+      this.toastr.success('성공적으로 업데이트되었습니다.');
       this.closeConfig();
       this.roadData();
     });

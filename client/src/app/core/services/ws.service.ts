@@ -12,12 +12,9 @@ export class WsService {
   private messageSubject = new Subject<MessageType>();
   private messages$ = this.messageSubject.asObservable();
   private wsUrl = environment.wsUrl;
-  private token = '';
   private retry = 0;
 
-  constructor(private authService: AuthService) {
-    this.token = this.authService.getToken();
-  }
+  constructor(private authService: AuthService) {}
 
   connect() {
     if (this.socket && this.socket.readyState === this.socket.OPEN) {
@@ -82,7 +79,7 @@ export class WsService {
     const req = {
       type: environment.messageType.auth,
       data: {
-        token: this.token,
+        token: this.authService.getToken(),
       },
     };
     this.socket.send(JSON.stringify(req));
@@ -91,6 +88,8 @@ export class WsService {
   }
 
   private reconnect() {
+    if (!this.authService.isLoggedIn()) return;
+
     const baseDelay = Math.min(1000 * Math.pow(2, this.retry), 30000);
     const jitter = Math.random() * 1000;
     const delay = baseDelay + jitter;

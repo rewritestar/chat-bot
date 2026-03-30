@@ -1,7 +1,11 @@
 package interactor
 
-import "github.com/gin-gonic/gin"
+import (
+	"chat-bot/src/core/cerror"
+
+	"github.com/gin-gonic/gin"
+)
 
 func ErrorPresenter(ctx *gin.Context, statusCode int, err error) {
-	ctx.JSON(statusCode, gin.H{"error": err.Error()})
+	cerror.HandleError(ctx, statusCode, err)
 }

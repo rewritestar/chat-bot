@@ -14,10 +14,13 @@ export class AppLayout {
     private wsService: WsService,
     private authService: AuthService,
     private router: Router,
-  ) {}
+  ) {
+    this.wsService.connect();
+  }
+
   logout() {
-    this.wsService.close();
     this.authService.logout();
+    this.wsService.close();
     this.router.navigate(['login']);
   }
 }

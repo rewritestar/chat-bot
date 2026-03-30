@@ -43,6 +43,7 @@ func (c *Client) authHandler(data []byte) {
 
 	if err := c.authorizeWsJwt(reqAuth.Token); err != nil {
 		log.Println(err.Error())
+		c.conn.Close()
 		return
 	}
 	c.Hub.Register <- c

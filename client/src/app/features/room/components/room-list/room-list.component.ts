@@ -4,6 +4,7 @@ import { AsyncPipe } from '@angular/common';
 import { Router } from '@angular/router';
 
 import { BehaviorSubject, startWith, Subject, switchMap, tap } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 
 import { RoomApiService } from '../../services/room-api.service';
 import { WsService } from '../../../../core/services/ws.service';
@@ -29,13 +30,14 @@ export class RoomList {
     private roomApi: RoomApiService,
     private router: Router,
     private wsService: WsService,
+    private toastr: ToastrService,
   ) {
     this.reload$
       .pipe(
         startWith(void 0),
         switchMap(() => this.roomApi.indexRoom()),
         tap((roomList: any) => {
-          this.roomList$.next(roomList.list);
+          this.roomList$.next(roomList.list ?? []);
         }),
       )
       .subscribe();
@@ -76,6 +78,7 @@ export class RoomList {
     };
 
     this.roomApi.saveRoom(req).subscribe((res: any) => {
+      this.toastr.success('성공적으로 생성되었습니다.');
       this.closeNewRoom();
       this.router.navigate([`room/${res.id}`]);
     });
@@ -87,6 +90,7 @@ export class RoomList {
       return;
     }
     this.roomApi.deleteRoom(this.selectedRoomId).subscribe(() => {
+      this.toastr.success('성공적으로 삭제되었습니다.');
       this.closeDeleteRoom();
       this.roadData();
     });

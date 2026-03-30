@@ -42,7 +42,7 @@ func (s *ollamaService) Chat(reqChat domain.RequestChat, roomHistory chatDomain.
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", os.Getenv(core_values.EnvOllamaApiKey)))
 
 	client := &http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: 3 * time.Minute,
 	}
 
 	response, err := client.Do(request)

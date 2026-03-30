@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import moment from 'moment';
+import { WsService } from './ws.service';
 
 @Injectable({
   providedIn: 'root',
@@ -46,5 +47,14 @@ export class AuthService {
     }
     const id = authSession.workerId;
     return id;
+  }
+
+  setToken(token: any) {
+    const authSession = {
+      token: token.token,
+      exp: token.exp,
+      workerId: token.workerId,
+    };
+    localStorage.setItem('authSession', JSON.stringify(authSession));
   }
 }
