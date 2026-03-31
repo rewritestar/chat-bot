@@ -35,6 +35,10 @@ func (s *roomService) UpdateRoom(reqData domain.Room) (*domain.Room, error) {
 	return s.repo.UpdateRoom(reqData)
 }
 
+func (s *roomService) UpdateLastReadChatID(roomID uint) error {
+	return s.repo.UpdateLastReadChatID(roomID)
+}
+
 func (s *roomService) SoftDeleteRoom(id uint) error {
 	return s.repo.SoftDeleteRoom(id)
 }

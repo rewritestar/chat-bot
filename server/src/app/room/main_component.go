@@ -65,6 +65,22 @@ func Main(r *gin.RouterGroup) {
 		interactor.RoomPresenter(ctx, room)
 	})
 
+	roomRouter.PUT("/:id/last-chat", func(ctx *gin.Context) {
+		id, err := interactor.RoomShowController(ctx)
+		if err != nil {
+			interactor.ErrorPresenter(ctx, http.StatusBadRequest, err)
+			return
+		}
+
+		err = service.UpdateLastReadChatID(id)
+		if err != nil {
+			interactor.ErrorPresenter(ctx, http.StatusInternalServerError, err)
+			return
+		}
+
+		interactor.CreatedPresenter(ctx)
+	})
+
 	roomRouter.GET("/:id", func(ctx *gin.Context) {
 		roomID, err := interactor.RoomShowController(ctx)
 		if err != nil {

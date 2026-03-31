@@ -7,18 +7,21 @@ type ResponseRoomList struct {
 }
 
 type ResponseRoom struct {
-	ID        uint   `json:"id"`
-	Name      string `json:"name"`
-	AiSystem  string `json:"aiSystem"`
-	CreatorID uint   `json:"creatorId"`
+	ID             uint   `json:"id"`
+	Name           string `json:"name"`
+	AiSystem       string `json:"aiSystem"`
+	LastReadChatID *uint  `json:"lastReadChatID"`
+	UnreadCount    uint   `json:"unreadCount"`
+	CreatorID      uint   `json:"creatorId"`
 
 	ChatList []responseChat `json:"chatList"`
 }
 
 type responseChat struct {
-	ID        uint   `json:"id"`
-	Content   string `json:"content"`
-	CreatorID uint   `json:"creatorId"`
+	ID          uint   `json:"id"`
+	Content     string `json:"content"`
+	CreatorID   uint   `json:"creatorId"`
+	DateCreated string `json:"dateCreated"`
 }
 
 func (r *ResponseRoomList) Build(roomList domain.RoomList) {
@@ -33,6 +36,8 @@ func (r *ResponseRoom) build(room domain.Room) {
 	r.ID = room.ID
 	r.Name = room.Name
 	r.AiSystem = room.AiSystem
+	r.LastReadChatID = room.LastReadChatID
+	r.UnreadCount = room.UnreadCount
 	r.CreatorID = room.CreatorID
 
 	if len(room.ChatList) > 0 {
@@ -46,6 +51,8 @@ func (r *ResponseRoom) Build(room domain.Room) {
 	r.ID = room.ID
 	r.Name = room.Name
 	r.AiSystem = room.AiSystem
+	r.LastReadChatID = room.LastReadChatID
+	r.UnreadCount = room.UnreadCount
 	r.CreatorID = room.CreatorID
 
 	for _, chat := range room.ChatList {
@@ -59,4 +66,5 @@ func (r *responseChat) Build(chat *domain.Chat) {
 	r.ID = chat.ID
 	r.Content = chat.Content
 	r.CreatorID = chat.CreatorID
+	r.DateCreated = chat.DateCreated.Format("06.01.02 15:04pm")
 }

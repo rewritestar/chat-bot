@@ -61,7 +61,7 @@ func (a *aiScheduler) runAiSchedule() {
 			}
 		}
 
-		next := nextRandomTime(2, 6)
+		next := nextRandomTime(2, 48)
 		room.AiProactiveNextDate = &next
 		a.chatSvc.UpdateRoom(room)
 	}

@@ -7,5 +7,6 @@ type RoomService interface {
 	ShowRoom(uint) (*domain.Room, error)
 	SaveRoom(domain.Room) (*domain.Room, error)
 	UpdateRoom(domain.Room) (*domain.Room, error)
+	UpdateLastReadChatID(uint) error
 	SoftDeleteRoom(uint) error
 }

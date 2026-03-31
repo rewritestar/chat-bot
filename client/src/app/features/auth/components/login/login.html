@@ -1,18 +1,48 @@
-<form
-  [formGroup]="form"
-  (ngSubmit)="onSubmit()"
-  class="min-w-96 h-full flex items-center justify-center"
->
-  <div class="w-96 flex flex-col">
-    <div class="w-full">
-      <label for="email">이메일 </label>
-      <input id="email" type="text" formControlName="email" />
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="bg-white rounded-xl shadow-xl p-8">
+  <div class="w-full">
+    <div class="mb-4 text-center">Login</div>
+    <div class="mb-2 h-20 max-sm:h-17">
+      <label class="mb-1 max-sm:text-sm">이메일</label>
+      <input
+        type="text"
+        class="rounded-md border-2 w-full p-1 max-sm:text-sm"
+        [ngClass]="{ 'border-gray-200': isEmailValid, 'border-red-300': !isEmailValid }"
+        formControlName="email"
+      />
+      <div>
+        @if (!isEmailValid) {
+          <span class="text-xs text-red-700"
+            >이메일 형식에 맞지 않습니다.(예시: example@example.com).</span
+          >
+        }
+      </div>
     </div>
-    <div>
-      <label for="password">비밀번호 </label>
-      <input id="password" type="passwordpassword" formControlName="password" />
+    <div class="mb-2 h-20 max-sm:h-17">
+      <label class="mb-1 max-sm:text-sm">비밀번호</label>
+      <input
+        type="password"
+        class="rounded-md border-2 w-full p-1 max-sm:text-sm"
+        [ngClass]="{ 'border-gray-200': isPasswordValid, 'border-red-300': !isPasswordValid }"
+        formControlName="password"
+      />
+      <div>
+        @if (!isPasswordValid) {
+          <span class="text-xs text-red-700">비밀번호는 8자리 이상 입력해주세요.</span>
+        }
+      </div>
     </div>
-    <input type="submit" value="제출" />
-    <a (click)="goToSignin()">회원이 아니신가요?</a>
+    <div class="mb-2">
+      <button
+        type="submit"
+        class="w-full bg-[#6391ee] rounded-md text-white h-10 max-sm:h-8 cursor-pointer"
+      >
+        <i class="fa-regular fa-paper-plane"></i>
+      </button>
+    </div>
+    <div class="w-full text-end">
+      <a (click)="goToSignin()"
+        ><span class="text-gray-600 cursor-pointer max-sm:text-sm">회원이 아니신가요?</span></a
+      >
+    </div>
   </div>
 </form>

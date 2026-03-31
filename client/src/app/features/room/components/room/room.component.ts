@@ -7,8 +7,8 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { AsyncPipe } from '@angular/common';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AsyncPipe, NgClass } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { BehaviorSubject, Observable, startWith, Subject, switchMap, tap } from 'rxjs';
@@ -17,14 +17,15 @@ import { ToastrService } from 'ngx-toastr';
 import { RoomApiService } from '../../services/room-api.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { WsService } from '../../../../core/services/ws.service';
+import { MarkdownComponent } from 'ngx-markdown';
 
 @Component({
   selector: 'room',
   templateUrl: 'room.html',
-  imports: [ReactiveFormsModule, AsyncPipe],
+  imports: [ReactiveFormsModule, AsyncPipe, NgClass, MarkdownComponent],
 })
 export class Room implements AfterViewChecked {
-  @ViewChild('scrollBottom') scrollBottom!: ElementRef;
+  @ViewChild('scrollContainer') scrollContainer!: ElementRef;
   private reload$ = new Subject<void>();
 
   room$: Observable<any>;
@@ -38,9 +39,11 @@ export class Room implements AfterViewChecked {
   });
 
   roomForm = new FormGroup({
-    name: new FormControl(''),
+    name: new FormControl('', [Validators.required]),
     aiSystem: new FormControl(''),
   });
+
+  isNameValid: boolean = true;
 
   defaultChatForm = {
     content: '',
@@ -63,21 +66,27 @@ export class Room implements AfterViewChecked {
         this.roomForm.patchValue(room);
       }),
     );
+    this.roomApi.updateLastChat(this.roomId).subscribe();
+
     this.workerId = this.authService.getId();
 
     this.wsService.joinRoom(this.roomId);
-
     this.wsService.getMessage().subscribe((data) => {
       if (data.roomId === this.roomId) {
         const current = this.chatList$.value || [];
         this.chatList$.next([...current, data.content]);
         this.scrollToBottom(true);
+        this.roomApi.updateLastChat(this.roomId).subscribe();
       }
+    });
+
+    this.roomForm.get('name')?.statusChanges.subscribe((value) => {
+      this.isNameValid = value === 'VALID' || this.isNameValid;
     });
   }
 
   ngAfterViewChecked() {
-    this.scrollToBottom(false);
+    setTimeout(() => this.scrollToBottom(false));
   }
 
   roadData() {
@@ -102,6 +111,7 @@ export class Room implements AfterViewChecked {
   onRoomSubmit() {
     if (this.roomForm.invalid) {
       console.log(this.roomForm.errors);
+      this.isNameValid = this.roomForm.get('name')?.valid || false;
       return;
     }
 
@@ -138,9 +148,10 @@ export class Room implements AfterViewChecked {
   }
 
   scrollToBottom(smooth: boolean) {
-    const element = this.scrollBottom?.nativeElement;
+    const element = this.scrollContainer?.nativeElement;
     if (element) {
-      this.scrollBottom?.nativeElement.scrollIntoView({
+      element.scrollTo({
+        top: element.scrollHeight,
         behavior: smooth ? 'smooth' : 'auto',
       });
     }

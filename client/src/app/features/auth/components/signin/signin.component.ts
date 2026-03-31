@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { NgClass } from '@angular/common';
 
 import { ToastrService } from 'ngx-toastr';
 
@@ -10,24 +11,36 @@ import { AuthService } from '../../../../core/services/auth.service';
 @Component({
   selector: 'signin',
   templateUrl: 'signin.html',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, NgClass],
 })
 export class Signin {
   form = new FormGroup({
-    email: new FormControl(''),
-    password: new FormControl(''),
+    email: new FormControl('', [Validators.required, Validators.email]),
+    password: new FormControl('', [Validators.required, Validators.minLength(8)]),
   });
+
+  isEmailValid: boolean = true;
+  isPasswordValid: boolean = true;
 
   constructor(
     private authApi: AuthApiService,
     private authService: AuthService,
     private router: Router,
     private toastr: ToastrService,
-  ) {}
+  ) {
+    this.form.get('email')?.statusChanges.subscribe((value) => {
+      this.isEmailValid = value === 'VALID' ? true : this.isEmailValid;
+    });
+    this.form.get('password')?.statusChanges.subscribe((value) => {
+      this.isPasswordValid = value === 'VALID' ? true : this.isPasswordValid;
+    });
+  }
 
   onSubmit() {
     if (this.form.invalid) {
-      console.log(this.form.errors);
+      console.log(this.form.get('email')?.errors, this.form.get('password')?.errors);
+      this.isEmailValid = this.form.get('email')?.valid || false;
+      this.isPasswordValid = this.form.get('password')?.valid || false;
       return;
     }
 
@@ -44,5 +57,9 @@ export class Signin {
         this.router.navigate(['']);
       });
     });
+  }
+
+  goToLogin() {
+    this.router.navigate(['login']);
   }
 }

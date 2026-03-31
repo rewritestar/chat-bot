@@ -27,6 +27,10 @@ export class RoomApiService {
     return this.http.put(`${this.apiUrl}/rooms/${id}`, data);
   }
 
+  updateLastChat(id: number) {
+    return this.http.put(`${this.apiUrl}/rooms/${id}/last-chat`, null);
+  }
+
   deleteRoom(id: number) {
     return this.http.delete(`${this.apiUrl}/rooms/${id}`);
   }

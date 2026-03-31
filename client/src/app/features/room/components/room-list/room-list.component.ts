@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { AsyncPipe } from '@angular/common';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AsyncPipe, NgClass } from '@angular/common';
 import { Router } from '@angular/router';
 
 import { BehaviorSubject, startWith, Subject, switchMap, tap } from 'rxjs';
@@ -12,7 +12,7 @@ import { WsService } from '../../../../core/services/ws.service';
 @Component({
   selector: 'room-list',
   templateUrl: 'room-list.html',
-  imports: [ReactiveFormsModule, AsyncPipe],
+  imports: [ReactiveFormsModule, AsyncPipe, NgClass],
 })
 export class RoomList {
   private reload$ = new Subject<void>();
@@ -22,9 +22,11 @@ export class RoomList {
   selectedRoomId: number | null = null;
 
   roomForm = new FormGroup({
-    name: new FormControl(''),
+    name: new FormControl('', [Validators.required]),
     aiSystem: new FormControl(''),
   });
+
+  isNameValid: boolean = true;
 
   constructor(
     private roomApi: RoomApiService,
@@ -51,10 +53,16 @@ export class RoomList {
 
       const updatedRoom = {
         ...selectedRoom,
+        unreadCount: selectedRoom.unreadCount + 1,
         chatList: [data.content],
       };
+
       const updatedList = [updatedRoom, ...currentList.filter((room) => room.id !== data.roomId)];
       this.roomList$.next(updatedList);
+    });
+
+    this.roomForm.get('name')?.statusChanges.subscribe((value) => {
+      this.isNameValid = value === 'VALID' || this.isNameValid;
     });
   }
 
@@ -69,6 +77,7 @@ export class RoomList {
   onRoomSubmit() {
     if (this.roomForm.invalid) {
       console.log(this.roomForm.errors);
+      this.isNameValid = this.roomForm.get('name')?.valid || false;
       return;
     }
 

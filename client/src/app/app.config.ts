@@ -6,6 +6,7 @@ import { provideToastr } from 'ngx-toastr';
 
 import { routes } from './app.routes';
 import { AuthInterceptor } from './core/services/auth-interceptor';
+import { provideMarkdown } from 'ngx-markdown';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -18,5 +19,6 @@ export const appConfig: ApplicationConfig = {
       multi: true,
     },
     provideToastr(),
+    provideMarkdown(),
   ],
 };
