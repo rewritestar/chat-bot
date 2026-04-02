@@ -4,6 +4,7 @@ import {
   Component,
   ElementRef,
   Input,
+  OnDestroy,
   OnInit,
   ViewChild,
 } from '@angular/core';
@@ -13,18 +14,18 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { BehaviorSubject, Observable, startWith, Subject, switchMap, tap } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+import { MarkdownComponent } from 'ngx-markdown';
 
 import { RoomApiService } from '../../services/room-api.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { WsService } from '../../../../core/services/ws.service';
-import { MarkdownComponent } from 'ngx-markdown';
 
 @Component({
   selector: 'room',
   templateUrl: 'room.html',
   imports: [ReactiveFormsModule, AsyncPipe, NgClass, MarkdownComponent],
 })
-export class Room implements AfterViewChecked {
+export class Room implements AfterViewChecked, OnDestroy {
   @ViewChild('scrollContainer') scrollContainer!: ElementRef;
   private reload$ = new Subject<void>();
 
@@ -66,7 +67,6 @@ export class Room implements AfterViewChecked {
         this.roomForm.patchValue(room);
       }),
     );
-    this.roomApi.updateLastChat(this.roomId).subscribe();
 
     this.workerId = this.authService.getId();
 
@@ -76,7 +76,6 @@ export class Room implements AfterViewChecked {
         const current = this.chatList$.value || [];
         this.chatList$.next([...current, data.content]);
         this.scrollToBottom(true);
-        this.roomApi.updateLastChat(this.roomId).subscribe();
       }
     });
 
@@ -87,6 +86,10 @@ export class Room implements AfterViewChecked {
 
   ngAfterViewChecked() {
     setTimeout(() => this.scrollToBottom(false));
+  }
+
+  ngOnDestroy() {
+    this.roomApi.updateLastChat(this.roomId).subscribe();
   }
 
   roadData() {

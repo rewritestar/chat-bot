@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"chat-bot/src/app/auth"
+	"chat-bot/src/app/push"
 	"chat-bot/src/app/room"
 	"chat-bot/src/app/ws"
 	"chat-bot/src/initial"
@@ -24,6 +25,7 @@ func main() {
 	router.Use(middleware.JwtMiddleware())
 	{
 		room.Main(router)
+		push.Main(router)
 	}
 
 	wsRouter := r.Group("/ws")

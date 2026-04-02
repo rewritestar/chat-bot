@@ -7,6 +7,7 @@ import { ToastrService } from 'ngx-toastr';
 
 import { AuthApiService } from '../../services/auth-api.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { PushService } from '../../../../core/services/push-service';
 
 @Component({
   selector: 'login',
@@ -26,6 +27,7 @@ export class Login {
     private router: Router,
     private authApi: AuthApiService,
     private authService: AuthService,
+    private pushService: PushService,
     private toastr: ToastrService,
   ) {
     this.form.get('email')?.statusChanges.subscribe((value) => {
@@ -51,6 +53,7 @@ export class Login {
 
     this.authApi.login(req).subscribe((res: any) => {
       this.toastr.success('성공적으로 로그인되었습니다.');
+      this.pushService.enablePush();
       this.authService.setToken(res);
       this.router.navigate(['']);
     });

@@ -69,6 +69,16 @@ export class WsService {
     }
   }
 
+  leaveRoom() {
+    if (this.socket && this.socket.readyState === this.socket.OPEN) {
+      const req = {
+        type: environment.messageType.leave,
+        data: null,
+      };
+      this.socket.send(JSON.stringify(req));
+    }
+  }
+
   close() {
     if (this.socket) {
       this.socket.close();

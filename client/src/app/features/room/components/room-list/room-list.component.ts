@@ -44,6 +44,8 @@ export class RoomList {
       )
       .subscribe();
 
+    this.wsService.leaveRoom();
+
     this.wsService.getMessage().subscribe((data) => {
       const currentList = this.roomList$.value || [];
       const selectedRoom = currentList.find((room) => room.id === data.roomId);

@@ -36,5 +36,17 @@ CREATE TABLE chat (
     FOREIGN KEY (creator_id) REFERENCES worker(id)
 );
 
+-- 푸시 알림
+
+CREATE TABLE push_subscription (
+    user_id INT UNSIGNED NOT NULL,
+    endpoint TEXT NOT NULL UNIQUE,
+    p256dh TEXT NOT NULL,
+    auth TEXT NOT NULL,
+    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES worker(id)
+);
+
 -- 디폴트 값
 INSERT INTO worker VALUES(1, "ai@admin.net", "$2a$10$KFvdVE9pibU.K6efgccCHuVOrvGTIzoD9Uxt5tzR/zRxjIIr6s3cy", "2026-03-19","2026-03-19")

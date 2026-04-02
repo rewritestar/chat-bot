@@ -11,6 +11,8 @@ import (
 	"chat-bot/src/core/ollama"
 	ollamaDomain "chat-bot/src/core/ollama/domain"
 	core_values "chat-bot/src/core/values"
+	webpush "chat-bot/src/core/web_push"
+	webPushDomain "chat-bot/src/core/web_push/domain"
 	"chat-bot/src/core/ws"
 	ws_values "chat-bot/src/core/ws/values"
 	"chat-bot/src/initial/ai_scheduler/values"
@@ -18,20 +20,23 @@ import (
 )
 
 type aiScheduler struct {
+	hub       *ws.Hub
 	ollamaSvc ollama.OllamaService
 	chatSvc   chat.ChatService
-	hub       *ws.Hub
+	pushSvc   webpush.WebPushService
 }
 
 type AiScheduler interface {
 	StartAIScheduler()
 }
 
-func NewAiSchduler(ollamaSvc ollama.OllamaService, chatSvc chat.ChatService, hub *ws.Hub) AiScheduler {
+func NewAiSchduler(hub *ws.Hub, ollamaSvc ollama.OllamaService, chatSvc chat.ChatService, pushSvc webpush.WebPushService,
+) AiScheduler {
 	return &aiScheduler{
+		hub,
 		ollamaSvc,
 		chatSvc,
-		hub,
+		pushSvc,
 	}
 }
 
@@ -53,11 +58,11 @@ func (a *aiScheduler) runAiSchedule() {
 
 	for _, room := range *roomList {
 		if len(room.ChatList) == 0 {
-			a.generateAiTalk(room.ID)
+			a.generateAiTalk(room)
 		} else if len(room.ChatList) > 0 {
 			lastChat := room.ChatList[0]
 			if lastChat.DateCreated.Add(time.Hour).Before(time.Now()) {
-				a.generateAiTalk(room.ID)
+				a.generateAiTalk(room)
 			}
 		}
 
@@ -67,12 +72,12 @@ func (a *aiScheduler) runAiSchedule() {
 	}
 }
 
-func (a *aiScheduler) generateAiTalk(roomID uint) {
+func (a *aiScheduler) generateAiTalk(room chatDomain.Room) {
 	reqData := ollamaDomain.RequestChat{
 		Role:    core_values.OllamaRoleSystem,
 		Content: values.ProactiveSystem,
 	}
-	roomHistory, err := a.chatSvc.FindHistoryByRoomID(roomID)
+	roomHistory, err := a.chatSvc.FindHistoryByRoomID(room.ID)
 	if err != nil {
 		log.Println(err.Error())
 		return
@@ -82,7 +87,7 @@ func (a *aiScheduler) generateAiTalk(roomID uint) {
 
 	domainChat := chatDomain.Chat{}
 	domainChat.Content = response.Message.Content
-	domainChat.RoomID = roomID
+	domainChat.RoomID = room.ID
 	domainChat.CreatorID = default_data.GetAIWorker().ID
 	savedChat, err := a.chatSvc.SaveChat(domainChat)
 	if err != nil {
@@ -94,10 +99,20 @@ func (a *aiScheduler) generateAiTalk(roomID uint) {
 	responseChat.Build(savedChat)
 	broadCast := &ws.BroadCast{
 		Type:    ws_values.MessageTypeChat,
-		RoomID:  roomID,
+		RoomID:  room.ID,
 		Content: responseChat,
 	}
 	a.hub.Broadcast <- broadCast
+
+	if a.hub.IsPushTarget(room.CreatorID, room.ID) {
+		reqPush := webPushDomain.RequestPush{
+			UserID: room.CreatorID,
+			RoomID: room.ID,
+			Title:  room.Name,
+			Body:   response.Message.Content,
+		}
+		a.pushSvc.Push(reqPush)
+	}
 }
 
 func nextRandomTime(minHours, maxHours int) time.Time {

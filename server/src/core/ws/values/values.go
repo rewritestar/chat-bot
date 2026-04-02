@@ -1,7 +1,8 @@
 package values
 
 var (
-	MessageTypeAuth = "AUTH"
-	MessageTypeJoin = "JOIN"
-	MessageTypeChat = "CHAT"
+	MessageTypeAuth  = "AUTH"
+	MessageTypeJoin  = "JOIN"
+	MessageTypeLeave = "LEAVE"
+	MessageTypeChat  = "CHAT"
 )

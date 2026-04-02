@@ -2,13 +2,13 @@ package ws
 
 import (
 	"encoding/json"
-	"errors"
 	"log"
 
 	chatDomain "chat-bot/src/common-service/chat/domain"
 	chatMessage "chat-bot/src/common-service/chat/message"
 	ollamaDomain "chat-bot/src/core/ollama/domain"
 	core_values "chat-bot/src/core/values"
+	webPushDomain "chat-bot/src/core/web_push/domain"
 	"chat-bot/src/core/ws/domain"
 	"chat-bot/src/core/ws/values"
 	"chat-bot/src/initial/default_data"
@@ -16,14 +16,19 @@ import (
 
 func (c *Client) readHandler(message []byte) {
 	reqMsg := domain.Message{}
-	if err := json.Unmarshal(message, &reqMsg); err != nil {
-		log.Println(err.Error())
-		return
-	}
-	dataBytes, err := json.Marshal(reqMsg.Data)
+	err := json.Unmarshal(message, &reqMsg)
 	if err != nil {
 		log.Println(err.Error())
 		return
+	}
+
+	var dataBytes []byte
+	if reqMsg.Data != nil {
+		dataBytes, err = json.Marshal(reqMsg.Data)
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
 	}
 
 	switch reqMsg.Type {
@@ -31,6 +36,8 @@ func (c *Client) readHandler(message []byte) {
 		c.authHandler(dataBytes)
 	case values.MessageTypeJoin:
 		c.joinHandler(dataBytes)
+	case values.MessageTypeLeave:
+		c.leaveHandler()
 	case values.MessageTypeChat:
 		c.chatHandler(dataBytes)
 	default:
@@ -48,21 +55,18 @@ func (c *Client) authHandler(data []byte) {
 	}
 	c.Hub.Register <- c
 
-	userID, ok := c.ctx.Get(core_values.WorkerIDKey)
-	if ok {
-		roomList, err := c.svc.FindRoomByCreatorID(userID.(uint))
-		if err != nil {
-			return
-		}
-		for _, room := range *roomList {
-			joinRoom := &JoinRoom{
-				RoomID: room.ID,
-				Client: c,
-			}
-			c.Hub.JoinRoom <- joinRoom
-		}
+	roomList, err := c.svc.FindRoomByCreatorID(*c.userID)
+	if err != nil {
+		return
 	}
-
+	for _, room := range *roomList {
+		joinRoom := &JoinRoom{
+			RoomID: room.ID,
+			Client: c,
+		}
+		c.Hub.JoinRoom <- joinRoom
+	}
+	c.CurrentRoomID = nil
 }
 
 func (c *Client) joinHandler(data []byte) {
@@ -76,16 +80,14 @@ func (c *Client) joinHandler(data []byte) {
 	c.Hub.JoinRoom <- joinRoom
 }
 
+func (c *Client) leaveHandler() {
+	c.Hub.leaveRoom <- c
+}
+
 func (c *Client) chatHandler(data []byte) {
 	reqChat := domain.ChatMessage{}
 	json.Unmarshal(data, &reqChat)
 
-	userID, ok := c.ctx.Get(core_values.WorkerIDKey)
-	if !ok {
-		err := errors.New("worker id does not exist.")
-		log.Println(err.Error())
-		return
-	}
 	roomHistory, err := c.svc.FindHistoryByRoomID(reqChat.RoomID)
 	if err != nil {
 		log.Println(err.Error())
@@ -95,7 +97,7 @@ func (c *Client) chatHandler(data []byte) {
 	domainChat := chatDomain.Chat{}
 	domainChat.Content = reqChat.Content
 	domainChat.RoomID = reqChat.RoomID
-	domainChat.CreatorID = userID.(uint)
+	domainChat.CreatorID = *c.userID
 
 	savedChat, err := c.svc.SaveChat(domainChat)
 	if err != nil {
@@ -112,7 +114,17 @@ func (c *Client) chatHandler(data []byte) {
 		Content: responseChat,
 	}
 	c.Hub.Broadcast <- broadCast
-	c.ollamaHandler(reqChat, *roomHistory)
+	go c.ollamaHandlerAsync(reqChat, *roomHistory)
+}
+
+func (c *Client) ollamaHandlerAsync(reqChat domain.ChatMessage, roomHistory chatDomain.Room) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("ollama panic:", r)
+		}
+	}()
+
+	c.ollamaHandler(reqChat, roomHistory)
 }
 
 func (c *Client) ollamaHandler(reqChat domain.ChatMessage, roomHistory chatDomain.Room) {
@@ -142,4 +154,14 @@ func (c *Client) ollamaHandler(reqChat domain.ChatMessage, roomHistory chatDomai
 		Content: responseChat,
 	}
 	c.Hub.Broadcast <- broadCast
+
+	if c.Hub.IsPushTarget(roomHistory.CreatorID, roomHistory.ID) {
+		reqPush := webPushDomain.RequestPush{
+			UserID: roomHistory.CreatorID,
+			RoomID: reqChat.RoomID,
+			Title:  roomHistory.Name,
+			Body:   response.Message.Content,
+		}
+		c.pushSvc.Push(reqPush)
+	}
 }

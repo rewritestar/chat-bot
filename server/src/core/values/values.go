@@ -1,8 +1,12 @@
 package core_values
 
 var (
-	EnvJwtSecret = "JWT_SECRET"
-	WorkerIDKey  = "workerId"
+	EnvJwtSecret       = "JWT_SECRET"
+	EnvVapidPublicKey  = "VAPID_PUBLIC_KEY"
+	EnvVapidPrivateKey = "VAPID_PRIVATE_KEY"
+	EnvClientUrl       = "CLIENT_URL"
+	EnvAdminEmail      = "ADMIN_EMAIL"
+	WorkerIDKey        = "workerId"
 )
 
 var (

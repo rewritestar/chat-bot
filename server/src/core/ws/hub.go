@@ -10,12 +10,16 @@ type Hub struct {
 
 	unregister chan *Client
 
+	leaveRoom chan *Client
+
 	JoinRoom chan *JoinRoom
 
 	Broadcast chan *BroadCast
 
-	clients map[*Client]bool
+	//온라인 client 리스트
+	Clients map[uint]*Client
 
+	//websocket 메시지 받을 room 별 client. 로그인이 되면 유저는 소속된 모든 room 에 join 된다.
 	RoomList map[uint]*RoomHub
 }
 
@@ -40,9 +44,10 @@ func NewHub() {
 	newHub := &Hub{
 		Register:   make(chan *Client),
 		unregister: make(chan *Client),
+		leaveRoom:  make(chan *Client),
 		JoinRoom:   make(chan *JoinRoom),
 		Broadcast:  make(chan *BroadCast),
-		clients:    make(map[*Client]bool),
+		Clients:    make(map[uint]*Client),
 		RoomList:   make(map[uint]*RoomHub),
 	}
 	hub = newHub
@@ -56,10 +61,12 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.Register:
-			h.clients[client] = true
+			if client.userID != nil {
+				h.Clients[*client.userID] = client
+			}
 		case client := <-h.unregister:
 			close(client.send)
-			delete(h.clients, client)
+			delete(h.Clients, *client.userID)
 			for _, roomhub := range h.RoomList {
 				ok := roomhub.clients[client]
 				if ok {
@@ -75,6 +82,9 @@ func (h *Hub) Run() {
 				h.RoomList[joinRoom.RoomID] = room
 			}
 			room.clients[joinRoom.Client] = true
+			joinRoom.Client.CurrentRoomID = &joinRoom.RoomID
+		case client := <-h.leaveRoom:
+			client.CurrentRoomID = nil
 		case broadCast := <-h.Broadcast:
 			roomHub, ok := h.RoomList[broadCast.RoomID]
 			if ok {
@@ -94,4 +104,13 @@ func (h *Hub) Run() {
 			}
 		}
 	}
+}
+
+func (h *Hub) IsPushTarget(userID, roomID uint) bool {
+	client, ok := h.Clients[userID]
+	if ok && client.CurrentRoomID != nil && *client.CurrentRoomID == roomID {
+		// User is online && join target room
+		return false
+	}
+	return true
 }

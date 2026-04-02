@@ -6,11 +6,11 @@ import (
 
 	"chat-bot/src/core/ollama"
 	core_values "chat-bot/src/core/values"
+	webpush "chat-bot/src/core/web_push"
 
 	"log"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/websocket"
 )
@@ -44,21 +44,27 @@ type Client struct {
 	// Buffered channel of outbound messages.
 	send chan []byte
 
-	ctx *gin.Context
-
 	svc chat.ChatService
 
 	ollamaSvc ollama.OllamaService
+
+	pushSvc webpush.WebPushService
+
+	userID *uint
+
+	CurrentRoomID *uint
 }
 
-func NewClient(hub *Hub, conn *websocket.Conn, send chan []byte, ctx *gin.Context, svc chat.ChatService, ollamaSvc ollama.OllamaService) *Client {
+func NewClient(hub *Hub, conn *websocket.Conn, send chan []byte, svc chat.ChatService, ollamaSvc ollama.OllamaService, pushSvc webpush.WebPushService) *Client {
 	return &Client{
 		hub,
 		conn,
 		send,
-		ctx,
 		svc,
 		ollamaSvc,
+		pushSvc,
+		nil,
+		nil,
 	}
 }
 
@@ -140,7 +146,8 @@ func (c *Client) authorizeWsJwt(tokenString string) error {
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		workerID, ok := claims[core_values.WorkerIDKey].(float64)
 		if ok {
-			c.ctx.Set(core_values.WorkerIDKey, uint(workerID))
+			userID := uint(workerID)
+			c.userID = &userID
 		}
 	}
 
