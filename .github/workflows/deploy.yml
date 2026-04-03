@@ -49,19 +49,19 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            mkdir -p /home/ubuntu/app/server/static
-            if [ ! -f /home/ubuntu/app/server/.env ]; then
-              echo "DB_USER=${{ secrets.DB_USER }}" > /home/ubuntu/app/server/.env
-              echo "DB_PW=${{ secrets.DB_PW }}" >> /home/ubuntu/app/server/.env
-              echo "DB_HOST=${{ secrets.DB_HOST }}" >> /home/ubuntu/app/server/.env
-              echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> /home/ubuntu/app/server/.env
-              echo "OLLAMA_API_KEY=${{ secrets.OLLAMA_API_KEY }}" >> /home/ubuntu/app/server/.env
-              echo "VAPID_PUBLIC_KEY=${{ secrets.VAPID_PUBLIC_KEY }}" >> /home/ubuntu/app/server/.env
-              echo "VAPID_PRIVATE_KEY=${{ secrets.VAPID_PRIVATE_KEY }}" >> /home/ubuntu/app/server/.env
-              echo "CLIENT_URL=${{ secrets.CLIENT_URL }}" >> /home/ubuntu/app/server/.env
-              echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" >> /home/ubuntu/app/server/.env
-              chmod 600 /home/ubuntu/app/server/.env
-            fi
+            APP_DIR=/home/ubuntu/app/server
+            mkdir -p $APP_DIR/static
+            rm -f $APP_DIR/.env
+            echo "DB_USER=${{ secrets.DB_USER }}" > $APP_DIR/.env
+            echo "DB_PW=${{ secrets.DB_PW }}" >> $APP_DIR/.env
+            echo "DB_HOST=${{ secrets.DB_HOST }}" >> $APP_DIR/.env
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $APP_DIR/.env
+            echo "OLLAMA_API_KEY=${{ secrets.OLLAMA_API_KEY }}" >> $APP_DIR/.env
+            echo "VAPID_PUBLIC_KEY=${{ secrets.VAPID_PUBLIC_KEY }}" >> $APP_DIR/.env
+            echo "VAPID_PRIVATE_KEY=${{ secrets.VAPID_PRIVATE_KEY }}" >> $APP_DIR/.env
+            echo "CLIENT_URL=${{ secrets.CLIENT_URL }}" >> $APP_DIR/.env
+            echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" >> $APP_DIR/.env
+            chmod 600 $APP_DIR/.env
 
       # EC2 전송
       - name: Copy files to EC2
