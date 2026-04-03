@@ -34,7 +34,7 @@ func main() {
 	}
 
 	r.Static("/static", "./static")
-	r.GET("/", func(c *gin.Context) {
+	r.NoRoute(func(c *gin.Context) {
 		c.File("./static/index.html")
 	})
 

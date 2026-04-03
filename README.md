@@ -1,12 +1,10 @@
-## How to start
+## 기본 정보
 
-```
-$ npm run start
-```
+- 주소
+  - http://3.27.133.36
 
-## Works to do
-
-- Angular 비동기 화면 갱신에 대한 이해
+- shh 주소
+  - ssh -i ~/.ssh/chatbot-key.pem ubuntu@3.27.133.36
 
 ## Problem
 
