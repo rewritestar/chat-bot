@@ -33,9 +33,8 @@ func main() {
 		ws.Main(wsRouter)
 	}
 
-	r.Static("/static", "./static")
 	r.NoRoute(func(c *gin.Context) {
-		c.File("./static/index.html")
+		c.File("./index.html")
 	})
 
 	if err := r.Run(":8080"); err != nil {

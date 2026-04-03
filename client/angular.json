@@ -46,8 +46,7 @@
                   "replace": "src/app/environments/environments.ts",
                   "with": "src/app/environments/environments.prod.ts"
                 }
-              ],
-              "baseHref": "/static/"
+              ]
             },
             "development": {
               "optimization": false,

@@ -92,7 +92,7 @@ func (r *roomRepository) UpdateRoom(room domain.Room) (*domain.Room, error) {
 }
 
 func (r *roomRepository) UpdateLastReadChatID(id uint) error {
-	var lastChatID uint
+	var lastChatID *uint
 
 	err := r.db.Model(&domain.Chat{}).
 		Select("MAX(chat.id) AS last_chat_id").
@@ -107,7 +107,7 @@ func (r *roomRepository) UpdateLastReadChatID(id uint) error {
 
 	var result domain.Room
 	result.ID = id
-	result.LastReadChatID = &lastChatID
+	result.LastReadChatID = lastChatID
 
 	if err = r.db.Updates(&result).Error; err != nil {
 		return err
