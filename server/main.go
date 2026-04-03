@@ -16,6 +16,7 @@ import (
 func main() {
 	initial.Main()
 	r := gin.Default()
+	r.Static("/", "./static")
 
 	router := r.Group("/api")
 	{
@@ -33,7 +34,7 @@ func main() {
 		ws.Main(wsRouter)
 	}
 
-	if err := r.Run(); err != nil {
+	if err := r.Run(":8080"); err != nil {
 		log.Fatalf("failed to run server: %v", err)
 	}
 }

@@ -1,0 +1,87 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Angular build
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build Angular
+        run: |
+          cd client
+          npm install
+          npm run build -- --configuration production
+
+      - name: Move Angular to Go static
+        run: |
+          rm -rf server/static
+          mkdir server/static
+          cp -r client/dist/client/browser/* server/static/
+
+      # Go build
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.22
+
+      - name: Build Go
+        run: |
+          cd server
+          go mod tidy
+          go build -o app
+
+      - name: Prepare EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            mkdir -p /home/ubuntu/app/server/static
+            if [ ! -f /home/ubuntu/app/server/.env ]; then
+              echo "DB_USER=${{ secrets.DB_USER }}" > /home/ubuntu/app/server/.env
+              echo "DB_PW=${{ secrets.DB_PW }}" >> /home/ubuntu/app/server/.env
+              echo "DB_HOST=${{ secrets.DB_HOST }}" >> /home/ubuntu/app/server/.env
+              echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" > /home/ubuntu/app/server/.env
+              echo "OLLAMA_API_KEY=${{ secrets.OLLAMA_API_KEY }}" >> /home/ubuntu/app/server/.env
+              echo "VAPID_PUBLIC_KEY=${{ secrets.VAPID_PUBLIC_KEY }}" >> /home/ubuntu/app/server/.env
+              echo "VAPID_PRIVATE_KEY=${{ secrets.VAPID_PRIVATE_KEY }}" >> /home/ubuntu/app/server/.env
+              echo "CLIENT_URL=${{ secrets.CLIENT_URL }}" >> /home/ubuntu/app/server/.env
+              echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" >> /home/ubuntu/app/server/.env
+              chmod 600 /home/ubuntu/app/server/.env
+            fi
+
+      # EC2 전송
+      - name: Copy files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          source: "server/app,server/static"
+          target: "/home/ubuntu/app"
+
+      # 서버 재시작
+      - name: Restart server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            pkill app || true
+            cd /home/ubuntu/app/server
+            chmod +x app
+            nohup ./app > server.log 2>&1 &

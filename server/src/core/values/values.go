@@ -1,6 +1,9 @@
 package core_values
 
 var (
+	EnvDBUser          = "DB_USER"
+	EnvDBPW            = "DB_PW"
+	EnvDBHost          = "DB_HOST"
 	EnvJwtSecret       = "JWT_SECRET"
 	EnvVapidPublicKey  = "VAPID_PUBLIC_KEY"
 	EnvVapidPrivateKey = "VAPID_PRIVATE_KEY"
