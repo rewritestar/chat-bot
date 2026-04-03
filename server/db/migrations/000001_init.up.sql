@@ -19,8 +19,7 @@ CREATE TABLE room (
     creator_id INT UNSIGNED NOT NULL,
     date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (creator_id) REFERENCES worker(id),
-    FOREIGN KEY (last_read_chat_id) REFERENCES chat(id)
+    FOREIGN KEY (creator_id) REFERENCES worker(id)
 );
 
 -- 채팅
