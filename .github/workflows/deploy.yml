@@ -24,12 +24,6 @@ jobs:
           npm install
           npm run build -- --configuration production
 
-      - name: Move Angular to Go static
-        run: |
-          rm -rf server/static
-          mkdir server/static
-          cp -r client/dist/client/browser/* server/static/
-
       # Go build
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -42,6 +36,13 @@ jobs:
           go mod tidy
           go build -o app
 
+      # flatten
+      - name: Prepare deployment directory
+        run: |
+          mkdir -p deploy_dist
+          cp server/app deploy_dist/
+          cp -r client/dist/client/browser/* deploy_dist/
+
       - name: Prepare EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -50,6 +51,7 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           script: |
             APP_DIR=/home/ubuntu/app
+            mkdir -p $APP_DIR
             rm -rf $APP_DIR/*
             echo "DB_USER=${{ secrets.DB_USER }}" > $APP_DIR/.env
             echo "DB_PW=${{ secrets.DB_PW }}" >> $APP_DIR/.env
@@ -69,18 +71,9 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
-          source: "server/app"
+          source: "deploy_dist/*"
           target: "/home/ubuntu/app"
-
-      # EC2 전송
-      - name: Copy files to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          source: "server/static/"
-          target: "/home/ubuntu/app"
+          strip_components: 1
 
       # 서버 재시작
       - name: Restart server
