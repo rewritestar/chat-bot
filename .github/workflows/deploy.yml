@@ -54,7 +54,7 @@ jobs:
               echo "DB_USER=${{ secrets.DB_USER }}" > /home/ubuntu/app/server/.env
               echo "DB_PW=${{ secrets.DB_PW }}" >> /home/ubuntu/app/server/.env
               echo "DB_HOST=${{ secrets.DB_HOST }}" >> /home/ubuntu/app/server/.env
-              echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" > /home/ubuntu/app/server/.env
+              echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> /home/ubuntu/app/server/.env
               echo "OLLAMA_API_KEY=${{ secrets.OLLAMA_API_KEY }}" >> /home/ubuntu/app/server/.env
               echo "VAPID_PUBLIC_KEY=${{ secrets.VAPID_PUBLIC_KEY }}" >> /home/ubuntu/app/server/.env
               echo "VAPID_PRIVATE_KEY=${{ secrets.VAPID_PRIVATE_KEY }}" >> /home/ubuntu/app/server/.env
@@ -81,7 +81,6 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            pkill app || true
-            cd /home/ubuntu/app/server
-            chmod +x app
-            nohup ./app > server.log 2>&1 &
+            sudo systemctl daemon-reload
+            sudo systemctl restart myapp.service
+            sudo systemctl status myapp.service --no-pager
