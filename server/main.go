@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"net/http"
+	"strings"
 
 	"chat-bot/src/app/auth"
 	"chat-bot/src/app/push"
@@ -34,6 +36,15 @@ func main() {
 	}
 
 	r.NoRoute(func(c *gin.Context) {
+		path := c.Request.URL.Path
+
+		// 파일 요청이면 404
+		if strings.Contains(path, ".") {
+			c.Status(http.StatusNotFound)
+			return
+		}
+
+		// 페이지 요청이면 index.html
 		c.File("./index.html")
 	})
 
