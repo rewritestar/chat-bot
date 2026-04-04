@@ -81,7 +81,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
-          source: "server/deploy/myapp.service"
+          source: "server/deploy/deploy.service"
           target: "/tmp"
 
       # 서버 재시작
@@ -92,8 +92,8 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            sudo mv /tmp/myapp.service /etc/systemd/system/myapp.service
+            sudo mv /tmp/deploy.service /etc/systemd/system/deploy.service
             sudo systemctl daemon-reload
-            sudo systemctl enable myapp.service
-            sudo systemctl restart myapp.service
-            sudo systemctl status myapp.service --no-pager
+            sudo systemctl enable deploy.service
+            sudo systemctl restart deploy.service
+            sudo systemctl status deploy.service --no-pager
