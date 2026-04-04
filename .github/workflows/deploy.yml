@@ -40,8 +40,9 @@ jobs:
       - name: Prepare deployment directory
         run: |
           mkdir -p deploy_dist
+          mkdir -p deploy_dist/chatbot
           cp server/app deploy_dist/
-          cp -r client/dist/client/browser/* deploy_dist/
+          cp -r client/dist/client/browser/* deploy_dist/chatbot/
 
       - name: Prepare EC2
         uses: appleboy/ssh-action@v1.0.3

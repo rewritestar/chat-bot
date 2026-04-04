@@ -33,10 +33,10 @@ func main() {
 		ws.Main(wsRouter)
 	}
 
-	r.Static("/", "./")
+	r.Static("/chatbot", "./chatbot")
 
 	r.NoRoute(func(c *gin.Context) {
-		c.File("./index.html")
+		c.File("./chatbot/index.html")
 	})
 
 	if err := r.Run(":8080"); err != nil {

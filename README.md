@@ -6,8 +6,14 @@
 - shh 주소
   - ssh -i ~/.ssh/chatbot-key.pem ubuntu@3.27.133.36
 
+- deploy.service
+  - /etc/systemd/system/deploy.service
+  - ec2 에 배포된 코드를 자동 실행해주는 프로그램.
+
 ## Problem
 
+- https 문제로 알림 설정 안됨
+- static 경로 다른 이름으로 바꾸기
 - 배포
 - PWA 모바일 설치관련 추가(배포 이후 확인)
 
