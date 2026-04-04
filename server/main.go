@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"strings"
 
 	"chat-bot/src/app/auth"
@@ -40,7 +39,6 @@ func main() {
 
 		// 파일 요청이면 404
 		if strings.Contains(path, ".") {
-			c.Status(http.StatusNotFound)
 			return
 		}
 
