@@ -1,0 +1,14 @@
+[Unit]
+Description=Deploy Go Server
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/app
+ExecStart=/home/ubuntu/app/app
+Restart=always
+RestartSec=3
+EnvironmentFile=/home/ubuntu/app/.env
+
+[Install]
+WantedBy=multi-user.target
