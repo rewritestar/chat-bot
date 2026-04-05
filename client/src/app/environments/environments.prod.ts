@@ -1,6 +1,6 @@
 export const environment = {
-  wsUrl: 'ws://3.27.133.36/ws',
-  apiUrl: 'http://3.27.133.36/api',
+  wsUrl: 'ws://52.63.106.10/ws',
+  apiUrl: 'http://52.63.106.10/api',
   messageType: {
     auth: 'AUTH',
     join: 'JOIN',

@@ -1,13 +1,14 @@
 ## 기본 정보
 
 - 주소
-  - http://3.27.133.36/chatbot
+  - http://52.63.106.10/chatbot
 
 - shh 주소
-  - ssh -i ~/.ssh/chatbot-key.pem ubuntu@3.27.133.36
+  - ssh -i ~/.ssh/chatbot-key.pem ubuntu@52.63.106.10
 
 - deploy.service
   - /etc/systemd/system/deploy.service
+  - sudo journalctl -u deploy.service
   - ec2 에 배포된 코드를 자동 실행해주는 프로그램.
 
 - 배포
