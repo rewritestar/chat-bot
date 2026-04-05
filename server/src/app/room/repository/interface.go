@@ -8,5 +8,5 @@ type RoomRepository interface {
 	SaveRoom(domain.Room) (*domain.Room, error)
 	UpdateRoom(domain.Room) (*domain.Room, error)
 	UpdateLastReadChatID(uint) error
-	SoftDeleteRoom(uint) error
+	DeleteRoom(uint) error
 }

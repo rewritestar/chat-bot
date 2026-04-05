@@ -91,7 +91,7 @@ func (r *chatRepository) FindAllRoomTickAiSchedule() (*domain.RoomList, error) {
 
 	err := r.db.Model(&result).
 		Where(`ai_proactive_next_date <= ? OR ai_proactive_next_date IS NULL`, time.Now()).
-		Where("is_deleted = ?", false).
+		Where("is_proactive = ?", true).
 		Preload("ChatList", func(db *gorm.DB) *gorm.DB {
 			return db.Order("date_created DESC")
 		}).

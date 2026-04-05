@@ -39,6 +39,6 @@ func (s *roomService) UpdateLastReadChatID(roomID uint) error {
 	return s.repo.UpdateLastReadChatID(roomID)
 }
 
-func (s *roomService) SoftDeleteRoom(id uint) error {
-	return s.repo.SoftDeleteRoom(id)
+func (s *roomService) DeleteRoom(id uint) error {
+	return s.repo.DeleteRoom(id)
 }

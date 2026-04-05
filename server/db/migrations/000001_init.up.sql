@@ -15,7 +15,7 @@ CREATE TABLE room (
     ai_system VARCHAR(10000),
     ai_proactive_next_date TIMESTAMP,
     last_read_chat_id INT UNSIGNED,
-    is_deleted BOOLEAN DEFAULT 0 NOT NULL,
+    is_proactive BOOLEAN DEFAULT 1 NOT NULL,
     creator_id INT UNSIGNED NOT NULL,
     date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

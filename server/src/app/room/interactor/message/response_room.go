@@ -12,6 +12,7 @@ type ResponseRoom struct {
 	AiSystem       string `json:"aiSystem"`
 	LastReadChatID *uint  `json:"lastReadChatID"`
 	UnreadCount    uint   `json:"unreadCount"`
+	IsProactive    *bool  `json:"isProactive"`
 	CreatorID      uint   `json:"creatorId"`
 
 	ChatList []responseChat `json:"chatList"`
@@ -38,6 +39,7 @@ func (r *ResponseRoom) build(room domain.Room) {
 	r.AiSystem = room.AiSystem
 	r.LastReadChatID = room.LastReadChatID
 	r.UnreadCount = room.UnreadCount
+	r.IsProactive = room.IsProactive
 	r.CreatorID = room.CreatorID
 
 	if len(room.ChatList) > 0 {

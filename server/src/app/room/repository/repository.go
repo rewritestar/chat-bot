@@ -40,7 +40,7 @@ func (r *roomRepository) FindAllRoom(workerID uint) (*domain.RoomList, error) {
 		Select("room.*, COALESCE(rcq.unread_count, 0) as unread_count").
 		Joins("LEFT JOIN (?) as lcq ON lcq.room_id = id", lastChatQuery).
 		Joins("LEFT JOIN (?) as rcq ON rcq.room_id = id", readCountQuery).
-		Where("creator_id = ? AND is_deleted = ?", workerID, false).
+		Where("creator_id = ?", workerID).
 		Preload("Creator").
 		Preload("ChatList", func(db *gorm.DB) *gorm.DB {
 			return db.Order("date_created DESC")
@@ -115,13 +115,17 @@ func (r *roomRepository) UpdateLastReadChatID(id uint) error {
 	return nil
 }
 
-func (r *roomRepository) SoftDeleteRoom(id uint) error {
-	err := r.db.Model(&domain.Room{}).
-		Where("id = ?", id).
-		UpdateColumns(map[string]interface{}{
-			"is_deleted": true,
-		}).
-		Error
+func (r *roomRepository) DeleteRoom(id uint) error {
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		if err := r.db.Delete(&domain.Chat{}, "room_id = ?", id).Error; err != nil {
+			return err
+		}
+
+		if err := r.db.Delete(&domain.Room{}, "id = ?", id).Error; err != nil {
+			return err
+		}
+		return nil
+	})
 
 	if err != nil {
 		log.Println(err.Error())

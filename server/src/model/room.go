@@ -8,7 +8,7 @@ type Room struct {
 	AiSystem            string     `gorm:"type:varchar(10000)"`
 	AiProactiveNextDate *time.Time `gorm:""`
 	LastReadChatID      *uint      `gorm:""`
-	IsDeleted           *bool      `gorm:"not null;default:false"`
+	IsProactive         *bool      `gorm:"not null;default:true"`
 	CreatorID           uint       `gorm:"not null"`
 	DateCreated         time.Time  `gorm:"autoCreateTime"`
 	LastUpdated         time.Time  `gorm:"autoUpdateTime"`

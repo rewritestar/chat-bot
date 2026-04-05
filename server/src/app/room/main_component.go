@@ -104,7 +104,7 @@ func Main(r *gin.RouterGroup) {
 			return
 		}
 
-		err = service.SoftDeleteRoom(roomID)
+		err = service.DeleteRoom(roomID)
 		if err != nil {
 			interactor.ErrorPresenter(ctx, http.StatusInternalServerError, err)
 			return

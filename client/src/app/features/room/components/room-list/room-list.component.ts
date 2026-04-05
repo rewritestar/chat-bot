@@ -123,4 +123,11 @@ export class RoomList {
   closeDeleteRoom() {
     this.isOpenDeleteRoom = false;
   }
+
+  onToggle(id: number, isProactive: boolean) {
+    const reqData = {
+      isProactive: isProactive,
+    };
+    this.roomApi.updateRoom(id, reqData).subscribe(() => this.roadData());
+  }
 }
