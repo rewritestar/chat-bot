@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { AfterViewChecked, Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AsyncPipe, NgClass } from '@angular/common';
 import { Router } from '@angular/router';
@@ -14,7 +14,7 @@ import { WsService } from '../../../../core/services/ws.service';
   templateUrl: 'room-list.html',
   imports: [ReactiveFormsModule, AsyncPipe, NgClass],
 })
-export class RoomList {
+export class RoomList implements OnInit {
   private reload$ = new Subject<void>();
   roomList$ = new BehaviorSubject<any[]>([]);
   isOpenNewRoom: boolean = false;
@@ -66,6 +66,10 @@ export class RoomList {
     this.roomForm.get('name')?.statusChanges.subscribe((value) => {
       this.isNameValid = value === 'VALID' || this.isNameValid;
     });
+  }
+
+  ngOnInit() {
+    this.roadData();
   }
 
   roadData() {

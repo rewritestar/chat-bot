@@ -77,7 +77,7 @@ func (a *aiScheduler) generateAiTalk(room chatDomain.Room) {
 		Role:    core_values.OllamaRoleSystem,
 		Content: values.ProactiveSystem,
 	}
-	roomHistory, err := a.chatSvc.FindHistoryByRoomID(room.ID)
+	roomHistory, err := a.chatSvc.FindHistoryByRoomID(room.ID, core_values.ChatHistoryLimit)
 	if err != nil {
 		log.Println(err.Error())
 		return

@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"log"
 
-	chatDomain "chat-bot/src/common-service/chat/domain"
-	chatMessage "chat-bot/src/common-service/chat/message"
 	ollamaDomain "chat-bot/src/core/ollama/domain"
 	core_values "chat-bot/src/core/values"
 	webPushDomain "chat-bot/src/core/web_push/domain"
@@ -88,25 +86,7 @@ func (c *Client) chatHandler(data []byte) {
 	reqChat := domain.ChatMessage{}
 	json.Unmarshal(data, &reqChat)
 
-	roomHistory, err := c.svc.FindHistoryByRoomID(reqChat.RoomID)
-	if err != nil {
-		log.Println(err.Error())
-		return
-	}
-
-	domainChat := chatDomain.Chat{}
-	domainChat.Content = reqChat.Content
-	domainChat.RoomID = reqChat.RoomID
-	domainChat.CreatorID = *c.userID
-
-	savedChat, err := c.svc.SaveChat(domainChat)
-	if err != nil {
-		log.Println(err.Error())
-		return
-	}
-
-	responseChat := chatMessage.ResponseChat{}
-	responseChat.Build(savedChat)
+	responseChat := c.processChat(reqChat.Content, reqChat.RoomID, *c.userID)
 
 	broadCast := &BroadCast{
 		Type:    values.MessageTypeChat,
@@ -114,40 +94,33 @@ func (c *Client) chatHandler(data []byte) {
 		Content: responseChat,
 	}
 	c.Hub.Broadcast <- broadCast
-	go c.ollamaHandlerAsync(reqChat, *roomHistory)
+
+	go c.ollamaHandlerAsync(reqChat)
 }
 
-func (c *Client) ollamaHandlerAsync(reqChat domain.ChatMessage, roomHistory chatDomain.Room) {
+func (c *Client) ollamaHandlerAsync(reqChat domain.ChatMessage) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Println("ollama panic:", r)
 		}
 	}()
 
-	c.ollamaHandler(reqChat, roomHistory)
+	c.ollamaHandler(reqChat)
 }
 
-func (c *Client) ollamaHandler(reqChat domain.ChatMessage, roomHistory chatDomain.Room) {
+func (c *Client) ollamaHandler(reqChat domain.ChatMessage) {
 	reqData := ollamaDomain.RequestChat{
 		Role:    core_values.OllamaRoleUser,
 		Content: reqChat.Content,
 	}
-	response := c.ollamaSvc.Chat(reqData, roomHistory)
-
-	domainChat := chatDomain.Chat{}
-	domainChat.Content = response.Message.Content
-	domainChat.RoomID = reqChat.RoomID
-	domainChat.CreatorID = default_data.GetAIWorker().ID
-
-	savedChat, err := c.svc.SaveChat(domainChat)
+	roomHistory, err := c.svc.FindHistoryByRoomID(reqChat.RoomID, core_values.ChatHistoryLimit)
 	if err != nil {
 		log.Println(err.Error())
 		return
 	}
+	aiResponse := c.ollamaSvc.Chat(reqData, *roomHistory)
 
-	responseChat := chatMessage.ResponseChat{}
-	responseChat.Build(savedChat)
-
+	responseChat := c.processChat(aiResponse.Message.Content, reqChat.RoomID, default_data.GetAIWorker().ID)
 	broadCast := &BroadCast{
 		Type:    values.MessageTypeChat,
 		RoomID:  reqChat.RoomID,
@@ -160,7 +133,7 @@ func (c *Client) ollamaHandler(reqChat domain.ChatMessage, roomHistory chatDomai
 			UserID: roomHistory.CreatorID,
 			RoomID: reqChat.RoomID,
 			Title:  roomHistory.Name,
-			Body:   response.Message.Content,
+			Body:   aiResponse.Message.Content,
 		}
 		c.pushSvc.Push(reqPush)
 	}

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"chat-bot/src/common-service/chat/domain"
-	"chat-bot/src/common-service/chat/values"
 
 	"gorm.io/gorm"
 )
@@ -14,9 +13,11 @@ import (
 type ChatRepository interface {
 	SaveChat(domain.Chat) (*domain.Chat, error)
 	UpdateRoom(domain.Room) (*domain.Room, error)
+	UpdateMemoryPendingCount(uint) error
 
-	FindHistoryByRoomID(uint) (*domain.Room, error)
+	FindHistoryByRoomID(uint, int) (*domain.Room, error)
 	FindRoomByCreatorID(uint) (*domain.RoomList, error)
+	FindRoomByID(uint) (*domain.Room, error)
 	FindAllRoomTickAiSchedule() (*domain.RoomList, error)
 }
 
@@ -46,7 +47,20 @@ func (r *chatRepository) UpdateRoom(room domain.Room) (*domain.Room, error) {
 	return &room, nil
 }
 
-func (r *chatRepository) FindHistoryByRoomID(roomID uint) (*domain.Room, error) {
+func (r *chatRepository) UpdateMemoryPendingCount(roomID uint) error {
+	err := r.db.Model(&domain.Room{}).
+		Where("room.id = ?", roomID).
+		Update("memory_pending_count", gorm.Expr("memory_pending_count + ?", 1)).
+		Error
+
+	if err != nil {
+		log.Println(err.Error())
+		return nil
+	}
+	return nil
+}
+
+func (r *chatRepository) FindHistoryByRoomID(roomID uint, limit int) (*domain.Room, error) {
 	result := domain.Room{}
 	result.ID = roomID
 
@@ -58,11 +72,26 @@ func (r *chatRepository) FindHistoryByRoomID(roomID uint) (*domain.Room, error) 
 	err := r.db.Model(&result.ChatList).
 		Where("room_id = ?", roomID).
 		Order("date_created DESC").
-		Limit(values.HistoryLimit).
+		Limit(limit).
 		Find(&result.ChatList).
 		Error
 
 	sort.Sort(result.ChatList)
+
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (r *chatRepository) FindRoomByID(roomID uint) (*domain.Room, error) {
+	result := domain.Room{}
+	result.ID = roomID
+
+	err := r.db.Model(&result).
+		First(&result).
+		Error
 
 	if err != nil {
 		log.Println(err.Error())

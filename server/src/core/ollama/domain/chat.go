@@ -1,6 +1,9 @@
 package domain
 
 import (
+	"encoding/json"
+	"fmt"
+	"log"
 	"time"
 
 	chatDomain "chat-bot/src/common-service/chat/domain"
@@ -25,10 +28,16 @@ func (r *RequestBody) SetBody(roomHistory chatDomain.Room, reqChat RequestChat) 
 	r.Stream = false
 	r.Messages = []RequestMessage{}
 
-	// system
+	// user config system
 	r.Messages = append(r.Messages, RequestMessage{
 		Role:    core_values.OllamaRoleSystem,
-		Content: roomHistory.AiSystem,
+		Content: fmt.Sprintf("------User AI Setting ------\n %s", roomHistory.AiSystem),
+	})
+
+	// memory
+	r.Messages = append(r.Messages, RequestMessage{
+		Role:    core_values.OllamaRoleSystem,
+		Content: fmt.Sprintf("------Memory of this chat room ------\n %s", roomHistory.Memory),
 	})
 
 	// user, assistant history
@@ -50,6 +59,43 @@ func (r *RequestBody) SetBody(roomHistory chatDomain.Room, reqChat RequestChat) 
 		Content: reqChat.Content,
 	})
 
+}
+
+func (r *RequestBody) SetSummaryBody(roomHistory chatDomain.Room) {
+	r.Model = core_values.OllamaModel
+	r.Options = RequestOptions{
+		Temperature: 0.0,
+		TopP:        1.0,
+	}
+	r.Stream = false
+	r.Messages = []RequestMessage{}
+
+	var historyMessage []RequestMessage
+
+	// user, assistant history
+	for _, chat := range roomHistory.ChatList {
+		role := core_values.OllamaRoleUser
+		if chat.CreatorID == default_data.GetAIWorker().ID {
+			role = core_values.OllamaRoleAssistant
+		}
+		reqMsg := RequestMessage{
+			Role:    role,
+			Content: chat.Content,
+		}
+		historyMessage = append(historyMessage, reqMsg)
+	}
+
+	historyByte, err := json.Marshal(historyMessage)
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+
+	// system
+	r.Messages = append(r.Messages, RequestMessage{
+		Role:    core_values.OllamaRoleSystem,
+		Content: fmt.Sprintf(core_values.SummaryPromptFrame, roomHistory.Memory, string(historyByte)),
+	})
 }
 
 type RequestOptions struct {

@@ -13,12 +13,15 @@ CREATE TABLE room (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255),
     ai_system VARCHAR(10000),
+    memory TEXT,
+    memory_pending_count INT UNSIGNED DEFAULT 0 NOT NULL,
     ai_proactive_next_date TIMESTAMP,
     last_read_chat_id INT UNSIGNED,
     is_proactive BOOLEAN DEFAULT 1 NOT NULL,
     creator_id INT UNSIGNED NOT NULL,
     date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    memory_updated TIMESTAMP,
     FOREIGN KEY (creator_id) REFERENCES worker(id)
 );
 

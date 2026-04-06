@@ -7,4 +7,5 @@ import (
 
 type OllamaService interface {
 	Chat(domain.RequestChat, chatDomain.Room) *domain.ResponseBody
+	Summarize(chatDomain.Room) *domain.ResponseBody
 }
